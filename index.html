@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FreshEats — Fresh. Healthy. Quick.</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            fresh: { green: '#4CAF50', mint: '#A8E6CF', 'mint-dark': '#7DD3B0' },
+            soft: { black: '#1A1A2E', coral: '#FFB7B2', yellow: '#FFEAA7', lavender: '#DDA0DD', blue: '#87CEEB' },
+            bg: { offwhite: '#F8F9FA', lightgrey: '#E9ECEF', 'green-tint': '#E8F5E9' },
+          },
+          fontFamily: { heading: ['"Plus Jakarta Sans"', 'sans-serif'], body: ['Inter', 'sans-serif'] },
+          borderRadius: { card: '16px', btn: '12px' },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background: #F8F9FA;
+    }
+
+    .card-shadow {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .card-shadow:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .screen {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .screen.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .slide-up {
+      animation: slideUp 0.35s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .leaf-bg {
+      background-image: radial-gradient(circle at 90% 10%, rgba(168, 230, 207, 0.15) 0%, transparent 50%), radial-gradient(circle at 10% 90%, rgba(76, 175, 80, 0.08) 0%, transparent 50%);
+    }
+
+    .splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease;
+    }
+
+    .splash-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    ::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    .btn-press:active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SPLASH SCREEN -->
+  <div id="splash" class="splash-screen">
+    <span class="text-6xl mb-4 animate-bounce">🌿</span>
+    <h1 class="text-3xl font-heading font-bold text-soft-black">FreshEats</h1>
+    <p class="text-sm text-gray-400 mt-2">Fresh. Healthy. Quick.</p>
+  </div>
+
+  <div class="max-w-lg mx-auto min-h-screen bg-white relative pb-20 leaf-bg">
+
+    <!-- TOP NAV -->
+    <div
+      class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-bg-lightgrey px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2 cursor-pointer btn-press" onclick="showScreen('home')">
+        <span class="text-2xl">🌿</span>
+        <h1 class="text-xl font-heading font-bold text-soft-black">FreshEats</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="role-badge" class="text-[10px] bg-soft-yellow px-2 py-0.5 rounded-full font-medium hidden"></span>
+        <button class="relative btn-press" aria-label="Cart" onclick="showScreen('cart')"><span
+            class="text-xl">🛒</span><span id="cart-badge"
+            class="absolute -top-1 -right-1 bg-fresh-green text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span></button>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div id="screen-home" class="screen active px-4 pt-4">
+      <div class="mb-4">
+        <p class="text-sm text-gray-500 font-body" id="greeting">Good afternoon 👋</p>
+        <h2 class="text-xl font-heading font-bold text-soft-black">What sounds good today?</h2>
+      </div>
+      <div class="relative mb-5"><span
+          class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span><input type="text"
+          placeholder="Search meals..."
+          class="w-full pl-10 pr-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm font-body focus:outline-none focus:border-fresh-mint transition-all" />
+      </div>
+      <div class="flex gap-2 overflow-x-auto pb-3 mb-3 scrollbar-hide">
+        <button
+          class="px-4 py-2 rounded-full text-sm font-medium bg-fresh-mint text-soft-black whitespace-nowrap">All</button>
+        <button
+          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap">Bowls</button>
+        <button
+          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap">Wraps</button>
+        <button
+          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap">Salads</button>
+        <button
+          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap">Smoothies</button>
+      </div>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-heading font-bold text-soft-black">Today's Menu</h3><span
+          class="text-xs text-fresh-green font-medium flex items-center gap-1">🌱 <span>Fresh picks</span></span>
+      </div>
+      <div class="space-y-4" id="meal-list"></div>
+    </div>
+
+    <!-- MEAL DETAIL -->
+    <div id="screen-meal" class="screen px-4 pt-4">
+      <button
+        class="flex items-center gap-1 text-sm text-gray-500 mb-4 hover:text-soft-black transition-colors btn-press"
+        onclick="showScreen('home')">← Back to menu</button>
+      <div id="meal-detail-content"></div>
+    </div>
+
+    <!-- CART -->
+    <div id="screen-cart" class="screen px-4 pt-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-heading font-bold text-soft-black">Your Cart</h2><button
+          class="text-sm text-gray-500 hover:text-soft-black btn-press"
+          onclick="if(cart.length===0){showScreen('home');}else if(confirm('Clear your cart?')){cart=[];updateCart();showScreen('home');}">Clear</button>
+      </div>
+      <div id="cart-content"></div>
+    </div>
+
+    <!-- TRACKING -->
+    <div id="screen-tracking" class="screen px-4 pt-4">
+      <button
+        class="flex items-center gap-1 text-sm text-gray-500 mb-4 hover:text-soft-black transition-colors btn-press"
+        onclick="showScreen('orders')">← My Orders</button>
+      <div id="tracking-content"></div>
+    </div>
+
+    <!-- ORDERS -->
+    <div id="screen-orders" class="screen px-4 pt-4">
+      <h2 class="text-xl font-heading font-bold text-soft-black mb-3">Orders</h2>
+      <div class="flex gap-1 bg-bg-offwhite rounded-btn p-1 mb-4">
+        <button id="tab-active"
+          class="flex-1 py-2 rounded-btn text-xs font-bold bg-white shadow-sm text-soft-black transition-all"
+          onclick="switchOrderTab('active')">🟢 Active</button>
+        <button id="tab-history"
+          class="flex-1 py-2 rounded-btn text-xs font-medium text-gray-500 hover:text-soft-black transition-all"
+          onclick="switchOrderTab('history')">📋 History</button>
+      </div>
+      <div id="orders-content"></div>
+    </div>
+
+    <!-- STREAKS -->
+    <div id="screen-streaks" class="screen px-4 pt-4">
+      <div id="streaks-content"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="screen-profile" class="screen px-4 pt-4">
+      <div id="profile-content"></div>
+    </div>
+
+    <!-- AUTH -->
+    <div id="screen-auth" class="screen px-4 pt-4">
+      <div id="auth-content"></div>
+    </div>
+
+    <!-- SUGGEST A MEAL -->
+    <div id="screen-suggest" class="screen px-4 pt-4">
+      <button
+        class="flex items-center gap-1 text-sm text-gray-500 mb-4 hover:text-soft-black transition-colors btn-press"
+        onclick="showScreen('profile')">← Back</button>
+      <h2 class="text-xl font-heading font-bold text-soft-black mb-1">Suggest a Meal</h2>
+      <p class="text-sm text-gray-500 mb-5">Got a healthy dish idea? We'd love to hear it!</p>
+      <div class="mb-3"><label class="text-xs font-medium text-gray-500 mb-1 block">Meal Name</label><input type="text"
+          id="suggest-name" placeholder="e.g. Quinoa Buddha Bowl"
+          class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all" />
+      </div>
+      <div class="mb-3"><label class="text-xs font-medium text-gray-500 mb-1 block">Description</label><textarea
+          id="suggest-desc" rows="3" placeholder="Tell us what's in it..."
+          class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all resize-none"></textarea>
+      </div>
+      <div class="mb-4"><label class="text-xs font-medium text-gray-500 mb-1 block">Why is it healthy?</label><textarea
+          id="suggest-why" rows="2" placeholder="Natural ingredients, high protein, low calorie..."
+          class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all resize-none"></textarea>
+      </div>
+      <button
+        class="w-full py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all btn-press"
+        onclick="submitSuggestion()">Submit Suggestion 🌿</button>
+    </div>
+
+    <!-- VENDOR DASHBOARD -->
+    <div id="screen-vendor" class="screen px-4 pt-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-heading font-bold text-soft-black">🍳 Vendor Dashboard</h2><button
+          class="text-xs text-gray-500 hover:text-soft-black btn-press" onclick="switchRole('worker')">Switch to Worker
+          →</button>
+      </div>
+      <div id="vendor-content"></div>
+    </div>
+
+    <!-- DELIVERY DASHBOARD -->
+    <div id="screen-delivery" class="screen px-4 pt-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-heading font-bold text-soft-black">🚚 Delivery Dashboard</h2><button
+          class="text-xs text-gray-500 hover:text-soft-black btn-press" onclick="switchRole('worker')">Switch to Worker
+          →</button>
+      </div>
+      <div id="delivery-content"></div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="screen-admin" class="screen px-4 pt-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-heading font-bold text-soft-black">🛡️ Admin Panel</h2><button
+          class="text-xs text-gray-500 hover:text-soft-black btn-press" onclick="switchRole('worker')">Switch to Worker
+          →</button>
+      </div>
+      <div id="admin-content"></div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div id="bottom-nav"
+      class="fixed bottom-0 left-1/2 -translate-x-1/2 max-w-lg w-full bg-white/90 backdrop-blur-md border-t border-bg-lightgrey px-4 py-2 flex items-center justify-around z-30">
+      <button class="flex flex-col items-center gap-0.5 nav-home btn-press" onclick="showScreen('home')"><span
+          class="text-xl">🏠</span><span class="text-[10px] font-medium">Home</span></button>
+      <button class="flex flex-col items-center gap-0.5 nav-orders btn-press" onclick="showScreen('orders')"><span
+          class="text-xl">📋</span><span class="text-[10px] font-medium">History</span></button>
+      <button id="nav-streaks-btn" class="flex flex-col items-center gap-0.5 nav-streaks btn-press" onclick="showScreen('streaks')"><span
+          class="text-xl">⭐</span><span class="text-[10px] font-medium">Streaks</span></button>
+      <button class="flex flex-col items-center gap-0.5 nav-profile btn-press" onclick="showScreen('profile')"><span
+          class="text-xl">👤</span><span class="text-[10px] font-medium">Profile</span></button>
+    </div>
+
+  </div>
+
+  <!-- LOGIN OVERLAY -->
+  <div id="login-overlay" class="fixed inset-0 bg-black/50 z-40 hidden flex items-end justify-center">
+    <div class="bg-white w-full max-w-lg rounded-t-3xl p-6 pb-10 slide-up">
+      <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+      <button class="float-right text-gray-400 hover:text-soft-black text-lg"
+        onclick="document.getElementById('login-overlay').classList.add('hidden')">✕</button>
+      <div class="text-center mb-5">
+        <span class="text-4xl block mb-2">🌿</span>
+        <h3 class="text-xl font-heading font-bold text-soft-black">Welcome to FreshEats</h3>
+        <p class="text-sm text-gray-500 mt-1">Who are you?</p>
+      </div>
+      <button
+        class="w-full py-3 rounded-btn bg-bg-green-tint text-soft-black font-semibold text-sm mb-2 hover:bg-fresh-mint transition-all btn-press flex items-center gap-3"
+        onclick="loginAs('worker')"><span class="text-xl">👤</span> I'm a Worker — Order Meals</button>
+      <button
+        class="w-full py-3 rounded-btn bg-soft-yellow/40 text-soft-black font-semibold text-sm mb-2 hover:bg-soft-yellow/60 transition-all btn-press flex items-center gap-3"
+        onclick="loginAs('vendor')"><span class="text-xl">🍳</span> I'm a Vendor — Manage Meals</button>
+      <button
+        class="w-full py-3 rounded-btn bg-soft-blue/30 text-soft-black font-semibold text-sm mb-2 hover:bg-soft-blue/50 transition-all btn-press flex items-center gap-3"
+        onclick="loginAs('delivery')"><span class="text-xl">🚚</span> I'm a Delivery Partner</button>
+      <button
+        class="w-full py-3 rounded-btn bg-soft-lavender/40 text-soft-black font-semibold text-sm mb-3 hover:bg-soft-lavender/60 transition-all btn-press flex items-center gap-3"
+        onclick="loginAs('admin')"><span class="text-xl">🛡️</span> I'm an Admin</button>
+      <p class="text-xs text-gray-400 text-center mt-2">Or <button class="text-fresh-green font-medium"
+          onclick="showEmailAuth()">sign in with email</button> if you have an account.</p>
+    </div>
+  </div>
+
+  <script>
+    // SPLASH
+    setTimeout(() => document.getElementById('splash').classList.add('hidden'), 600);
+
+    const meals = [
+      { id: 1, name: 'Grilled Chicken Bowl', emoji: '🥗', price: 249, description: 'Tender grilled chicken, quinoa, avocado, mixed greens, and a light lemon dressing.', ingredients: 'Grilled chicken breast, quinoa, avocado, mixed greens, cherry tomatoes, cucumber, lemon olive oil dressing, sea salt, black pepper.', calories: 350, protein: 28, fibre: 12, tag: 'Bowls' },
+      { id: 2, name: 'Rainbow Veggie Wrap', emoji: '🌯', price: 199, description: 'Whole wheat wrap filled with fresh veggies, hummus, and a tangy yogurt sauce.', ingredients: 'Whole wheat tortilla, hummus, bell peppers, carrots, lettuce, cucumber, yogurt sauce, mint, lemon juice.', calories: 280, protein: 12, fibre: 8, tag: 'Wraps' },
+      { id: 3, name: 'Berry Protein Smoothie', emoji: '🥤', price: 169, description: 'Mixed berries, banana, whey protein, and almond milk — creamy and refreshing.', ingredients: 'Mixed berries, banana, vanilla whey protein, unsweetened almond milk, honey.', calories: 220, protein: 18, fibre: 5, tag: 'Smoothies' },
+      { id: 4, name: 'Mediterranean Salad', emoji: '🥗', price: 219, description: 'Crisp romaine, feta cheese, olives, cherry tomatoes, and a zesty oregano vinaigrette.', ingredients: 'Romaine lettuce, feta cheese, kalamata olives, cherry tomatoes, red onion, cucumber, oregano vinaigrette.', calories: 260, protein: 10, fibre: 7, tag: 'Salads' },
+      { id: 5, name: 'Teriyaki Tofu Bowl', emoji: '🍚', price: 229, description: 'Pan-seared tofu with broccoli, edamame, brown rice, and teriyaki glaze.', ingredients: 'Firm tofu, broccoli, edamame, brown rice, teriyaki sauce, sesame seeds, green onion.', calories: 380, protein: 22, fibre: 10, tag: 'Bowls' },
+    ];
+
+    let cart = [], currentMealId = null, isLoggedIn = false;
+    let loggedInUser = { name: 'You', email: 'you@example.com', role: 'worker' };
+    const allOrders = [];
+    let accounts = [];
+    let streakData = { currentStreak: 0, longestStreak: 0, points: 0, weekLog: [false, false, false, false, false, false, false] };
+    let vendorMeals = meals.map(m => ({ ...m, available: true, stock: 10 }));
+    let mealSuggestions = [];
+
+    // ========== LOCALSTORAGE PERSISTENCE ==========
+    function saveState() {
+      try {
+        localStorage.setItem('fe_loggedIn', JSON.stringify(isLoggedIn));
+        localStorage.setItem('fe_user', JSON.stringify(loggedInUser));
+        localStorage.setItem('fe_orders', JSON.stringify(allOrders));
+        localStorage.setItem('fe_streak', JSON.stringify(streakData));
+        localStorage.setItem('fe_cart', JSON.stringify(cart));
+        localStorage.setItem('fe_suggestions', JSON.stringify(mealSuggestions));
+        localStorage.setItem('fe_accounts', JSON.stringify(accounts));
+      } catch (e) { }
+    }
+    function loadState() {
+      try {
+        const li = localStorage.getItem('fe_loggedIn');
+        if (li === 'true') {
+          isLoggedIn = true;
+          const u = localStorage.getItem('fe_user');
+          if (u) loggedInUser = JSON.parse(u);
+        }
+        const o = localStorage.getItem('fe_orders');
+        if (o) { const arr = JSON.parse(o); arr.forEach(x => allOrders.push(x)); }
+        const s = localStorage.getItem('fe_streak');
+        if (s) streakData = JSON.parse(s);
+        const c = localStorage.getItem('fe_cart');
+        if (c && li === 'true') { const arr = JSON.parse(c); arr.forEach(x => cart.push(x)); }
+        const sg = localStorage.getItem('fe_suggestions');
+        if (sg) { const arr = JSON.parse(sg); arr.forEach(x => mealSuggestions.push(x)); }
+        const ac = localStorage.getItem('fe_accounts');
+        if (ac) accounts = JSON.parse(ac);
+      } catch (e) { }
+    }
+    loadState();
+
+    function renderHome() {
+      if (isLoggedIn && loggedInUser.role !== 'worker') {
+        document.getElementById('meal-list').innerHTML = `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">👷</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">Workers Only</h3><p class="text-sm text-gray-500 mb-1">This section is for ordering meals.</p><p class="text-sm text-gray-500 mb-5">Switch to a Worker account to place orders.</p><button class="px-6 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press" onclick="signOut()">Sign Out</button></div>`;
+        return;
+      }
+      document.getElementById('meal-list').innerHTML = meals.map(m => `
+        <div class="bg-white rounded-card card-shadow overflow-hidden border border-bg-lightgrey fade-in">
+          <div class="h-40 flex items-center justify-center text-5xl relative" style="background: linear-gradient(135deg, #E8F5E9, #F1F8E9);">
+            <span>${m.emoji}</span>
+            <div class="absolute top-2 right-2 bg-fresh-mint text-soft-black text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 shadow-sm"><span>🌿</span> Healthy</div>
+          </div>
+          <div class="p-4">
+            <div class="flex items-start justify-between mb-1">
+              <h4 class="font-heading font-bold text-soft-black text-base">${m.name}</h4>
+              <span class="font-heading font-bold text-soft-black">₹${m.price}</span>
+            </div>
+            <p class="text-sm text-gray-500 font-body mb-3 line-clamp-2">${m.description}</p>
+            <div class="flex items-center gap-3 mb-4">
+              <span class="text-xs bg-bg-offwhite px-2 py-1 rounded-full font-medium flex items-center gap-1">🔥 ${m.calories}</span>
+              <span class="text-xs bg-bg-offwhite px-2 py-1 rounded-full font-medium flex items-center gap-1">💪 ${m.protein}g</span>
+              <span class="text-xs bg-bg-offwhite px-2 py-1 rounded-full font-medium flex items-center gap-1">🌾 ${m.fibre}g</span>
+            </div>
+            <button class="w-full py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm hover:bg-fresh-mint-dark transition-all card-shadow hover:shadow-lg btn-press" onclick="handleOrderClick(${m.id})">Order Now</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderMealDetail(mealId) {
+      const m = meals.find(x => x.id === mealId); if (!m) return;
+      currentMealId = m.id; mealQty = 1;
+      document.getElementById('meal-detail-content').innerHTML = `
+        <div class="rounded-card h-48 flex items-center justify-center text-7xl mb-4 relative" style="background: linear-gradient(135deg, #E8F5E9, #F1F8E9);">
+          <span>${m.emoji}</span>
+          <div class="absolute top-3 right-3 bg-fresh-mint text-soft-black text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm"><span>🌿</span> Healthy</div>
+        </div>
+        <h2 class="text-2xl font-heading font-bold text-soft-black mb-1">${m.name}</h2>
+        <span class="text-xl font-heading font-bold text-fresh-green mb-3 block">₹${m.price}</span>
+        <p class="text-sm text-gray-600 font-body mb-4 leading-relaxed">${m.description}</p>
+        <div class="bg-bg-offwhite rounded-card p-4 mb-4">
+          <h4 class="font-heading font-bold text-soft-black text-sm mb-3">🥗 Nutrition Per Serving</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="bg-white rounded-btn p-3 text-center shadow-sm"><span class="text-xl">🔥</span><p class="text-sm font-bold text-soft-black mt-1">${m.calories}</p><p class="text-[10px] text-gray-400">Calories</p></div>
+            <div class="bg-white rounded-btn p-3 text-center shadow-sm"><span class="text-xl">💪</span><p class="text-sm font-bold text-soft-black mt-1">${m.protein}g</p><p class="text-[10px] text-gray-400">Protein</p></div>
+            <div class="bg-white rounded-btn p-3 text-center shadow-sm"><span class="text-xl">🌾</span><p class="text-sm font-bold text-soft-black mt-1">${m.fibre}g</p><p class="text-[10px] text-gray-400">Fibre</p></div>
+          </div>
+        </div>
+        <div class="bg-bg-offwhite rounded-card p-4 mb-4"><h4 class="font-heading font-bold text-soft-black text-sm mb-2">📝 Ingredients</h4><p class="text-sm text-gray-600 font-body leading-relaxed">${m.ingredients}</p></div>
+        <div class="mb-4"><h4 class="font-heading font-bold text-soft-black text-sm mb-3">How would you like it?</h4>
+          <div class="flex gap-3">
+            <label class="flex-1 cursor-pointer"><input type="radio" name="order-type" value="pickup" checked class="peer hidden" onclick="toggleLocationField()" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-mint peer-checked:bg-bg-green-tint rounded-btn p-3 text-center transition-all shadow-sm"><span class="text-xl">🚶</span><p class="text-xs font-bold text-soft-black mt-1">Pickup</p></div></label>
+            <label class="flex-1 cursor-pointer"><input type="radio" name="order-type" value="delivery" class="peer hidden" onclick="toggleLocationField()" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-mint peer-checked:bg-bg-green-tint rounded-btn p-3 text-center transition-all shadow-sm"><span class="text-xl">📦</span><p class="text-xs font-bold text-soft-black mt-1">Delivery</p></div></label>
+          </div>
+        </div>
+        <div class="mb-4"><h4 class="font-heading font-bold text-soft-black text-sm mb-3">Pick a time slot</h4>
+          <div class="grid grid-cols-3 gap-2">${['11:30 AM', '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM'].map(t => `<label class="cursor-pointer"><input type="radio" name="time-slot" value="${t}" class="peer hidden" /><div class="border border-bg-lightgrey peer-checked:border-fresh-mint peer-checked:bg-bg-green-tint rounded-btn p-2 text-center text-xs font-medium text-soft-black transition-all peer-checked:font-bold shadow-sm">${t}</div></label>`).join('')}</div>
+        </div>
+        <div class="mb-4 hidden" id="location-field">
+          <h4 class="font-heading font-bold text-soft-black text-sm mb-2">📍 Delivery Location</h4>
+          <input type="text" id="delivery-location" placeholder="e.g. Building A, 4th Floor, Desk 42" value="${loggedInUser.location || ''}" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all" />
+          <p class="text-xs text-gray-400 mt-1">IT Park, building, floor, and desk number</p>
+        </div>
+        <div class="flex items-center gap-4 mb-6">
+          <div class="flex items-center border border-bg-lightgrey rounded-btn overflow-hidden shadow-sm">
+            <button class="px-3 py-2 text-lg hover:bg-bg-offwhite transition-colors btn-press" onclick="changeQty(-1)">−</button>
+            <span class="px-4 py-2 font-bold text-sm" id="meal-qty">1</span>
+            <button class="px-3 py-2 text-lg hover:bg-bg-offwhite transition-colors btn-press" onclick="changeQty(1)">+</button>
+          </div>
+          <span class="text-sm text-gray-500" id="meal-subtotal">₹${m.price}</span>
+        </div>
+        <button class="w-full py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press" onclick="addToCart(${m.id})">Add to Cart — <span id="cart-total-text">₹${m.price}</span></button>
+      `;
+    }
+    /*<div class="flex items-center gap-4 mb-6">
+      <div class="flex items-center border border-bg-lightgrey rounded-btn overflow-hidden shadow-sm">
+        <button class="px-3 py-2 text-lg hover:bg-bg-offwhite transition-colors btn-press" onclick="changeQty(-1)">−</button>
+       <span class="px-4 py-2 font-bold text-sm" id="meal-qty">1</span>
+        <button class="px-3 py-2 text-lg hover:bg-bg-offwhite transition-colors btn-press" onclick="changeQty(1)">+</button>
+      </div>
+      <span class="text-sm text-gray-500" id="meal-subtotal">₹${m.price}</span>
+    </div>
+    <button class="w-full py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press" onclick="addToCart(${m.id})">Add to Cart — <span id="cart-total-text">₹${m.price}</span></button>
+  ;
+}*/
+
+    let mealQty = 1;
+    function changeQty(d) { const m = meals.find(x => x.id === currentMealId); if (!m) return; mealQty = Math.max(1, mealQty + d); document.getElementById('meal-qty').textContent = mealQty; document.getElementById('meal-subtotal').textContent = '₹' + (m.price * mealQty); document.getElementById('cart-total-text').textContent = '₹' + (m.price * mealQty); }
+    function toggleLocationField() {
+      const f = document.getElementById('location-field'); if (!f) return;
+      const d = document.querySelector('input[name="order-type"]:checked')?.value;
+      f.classList.toggle('hidden', d !== 'delivery');
+    }
+    function addToCart(mealId) {
+      const m = meals.find(x => x.id === mealId); if (!m) return;
+      const ot = document.querySelector('input[name="order-type"]:checked')?.value || 'pickup';
+      const ts = document.querySelector('input[name="time-slot"]:checked')?.value || '12:00 PM';
+      const loc = document.getElementById('delivery-location')?.value || loggedInUser.location || '';
+      const e = cart.find(i => i.id === mealId && i.orderType === ot && i.timeSlot === ts);
+      if (e) e.qty += mealQty; else cart.push({ id: m.id, name: m.name, emoji: m.emoji, price: m.price, qty: mealQty, orderType: ot, timeSlot: ts, location: loc });
+      mealQty = 1; updateCart(); showScreen('cart');
+    }
+    function updateCart() {
+      const b = document.getElementById('cart-badge'); const t = cart.reduce((s, i) => s + i.qty, 0);
+      if (t > 0) { b.textContent = t; b.classList.remove('hidden'); } else { b.classList.add('hidden'); }
+      renderCart();
+    }
+    function renderCart() {
+      const c = document.getElementById('cart-content');
+      if (!cart.length) { c.innerHTML = `<div class="text-center py-16 fade-in"><span class="text-6xl block mb-4">🛒</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">Your cart is empty</h3><p class="text-sm text-gray-500 mb-5">Browse the menu and add items you'd like!</p><button class="px-8 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press" onclick="showScreen('home')">Browse Menu</button></div>`; return; }
+      let t = 0; const ih = cart.map(i => { const it = i.price * i.qty; t += it; return `<div class="flex items-center gap-3 bg-bg-offwhite rounded-card p-3 mb-2 fade-in"><span class="text-3xl">${i.emoji}</span><div class="flex-1 min-w-0"><p class="font-heading font-bold text-soft-black text-sm">${i.name}</p><p class="text-xs text-gray-500">${i.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery'} · ${i.timeSlot}</p></div><div class="text-right"><p class="font-heading font-bold text-soft-black text-sm">₹${it}</p><p class="text-xs text-gray-500">×${i.qty}</p></div><button class="text-gray-400 hover:text-soft-coral transition-colors text-lg btn-press" onclick="removeFromCart(${i.id},'${i.orderType}','${i.timeSlot}')">✕</button></div>`; }).join('');
+      const g = Math.round(t * 0.05);
+      c.innerHTML = `${ih}<div class="border-t border-bg-lightgrey mt-4 pt-4"><div class="flex justify-between mb-1"><span class="text-sm text-gray-500">Subtotal</span><span class="text-sm font-medium text-soft-black">₹${t}</span></div>${t > 0 ? `<div class="flex justify-between mb-1"><span class="text-sm text-gray-500">GST (5%)</span><span class="text-sm font-medium text-soft-black">₹${g}</span></div>` : ''}<div class="flex justify-between mt-2 pt-2 border-t border-bg-lightgrey"><span class="font-heading font-bold text-soft-black">Total</span><span class="font-heading font-bold text-fresh-green text-lg">₹${t + g}</span></div></div><div class="mt-4 mb-3"><h4 class="font-heading font-bold text-soft-black text-sm mb-2">Payment Method</h4><div class="flex gap-2"><label class="flex-1 cursor-pointer"><input type="radio" name="payment" value="upi" checked class="peer hidden" /><div class="border border-bg-lightgrey peer-checked:border-fresh-mint peer-checked:bg-bg-green-tint rounded-btn p-2 text-center text-xs font-medium transition-all shadow-sm">📱 UPI</div></label><label class="flex-1 cursor-pointer"><input type="radio" name="payment" value="card" class="peer hidden" /><div class="border border-bg-lightgrey peer-checked:border-fresh-mint peer-checked:bg-bg-green-tint rounded-btn p-2 text-center text-xs font-medium transition-all shadow-sm">💳 Card</div></label><label class="flex-1 cursor-pointer"><input type="radio" name="payment" value="lunch_card" class="peer hidden" /><div class="border border-bg-lightgrey peer-checked:border-fresh-mint peer-checked:bg-bg-green-tint rounded-btn p-2 text-center text-xs font-medium transition-all shadow-sm">🍱 Lunch Card</div></label></div></div><button class="w-full py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press" onclick="placeOrder()">Place Order — ₹${t + g}</button>`;
+    }
+    function removeFromCart(id, ot, ts) { cart = cart.filter(i => !(i.id === id && i.orderType === ot && i.timeSlot === ts)); updateCart(); }
+    function placeOrder() {
+      if (!isLoggedIn) { document.getElementById('login-overlay').classList.remove('hidden'); return; }
+      if (!cart.length) return;
+      const t = cart.reduce((s, i) => s + i.price * i.qty, 0); const g = Math.round(t * 0.05);
+      const order = { id: Date.now(), items: [...cart], total: t + g, paymentMethod: document.querySelector('input[name="payment"]:checked')?.value || 'upi', status: 'confirmed', createdAt: new Date(), timeSlot: cart[0].timeSlot, orderType: cart[0].orderType, userId: loggedInUser.email, rating: 0, userName: loggedInUser.name, userEmail: loggedInUser.email };
+      allOrders.unshift(order);
+      streakData.currentStreak += 1; if (streakData.currentStreak > streakData.longestStreak) streakData.longestStreak = streakData.currentStreak;
+      streakData.points += 10; const d = new Date().getDay(); streakData.weekLog[d === 0 ? 6 : d - 1] = true;
+      cart = []; saveState(); updateCart(); showTracking(order.id);
+    }
+
+    function showTracking(orderId) {
+      const o = allOrders.find(x => x.id === orderId); if (!o) return;
+      const steps = [
+        { l: 'Order Confirmed', d: 'Kitchen has received your order', done: true },
+        { l: 'Preparing', d: 'Your meal is being cooked fresh', done: o.status !== 'confirmed' },
+        { l: `Ready for ${o.orderType === 'pickup' ? 'Pickup' : 'Delivery'}`, d: o.orderType === 'pickup' ? 'Head to the counter' : 'Wait at your desk', done: o.status === 'ready' || o.status === 'completed' },
+        { l: 'Completed', d: 'Enjoy your meal!', done: o.status === 'completed' }
+      ];
+      document.getElementById('tracking-content').innerHTML = `
+        <div class="text-center mb-6 fade-in"><span class="text-5xl block mb-3">🎉</span><h2 class="text-xl font-heading font-bold text-soft-black">Order Placed!</h2><p class="text-sm text-gray-500">Order #${String(o.id).slice(-6)}</p></div>
+        <div class="bg-bg-offwhite rounded-card p-4 mb-4">${o.items.map(i => `<div class="flex items-center gap-3 mb-2"><span class="text-3xl">${i.emoji}</span><div><p class="font-heading font-bold text-soft-black text-sm">${i.name} ×${i.qty}</p></div></div>`).join('')}<div class="flex items-center justify-between text-sm mt-2 pt-2 border-t border-bg-lightgrey"><span class="text-gray-500">${o.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery'}</span><span class="text-gray-500">⏰ ${o.timeSlot}</span></div></div>
+        <div class="space-y-3 mb-6">${steps.map((s, i) => `<div class="flex items-center gap-3 ${s.done ? '' : 'opacity-40'}"><div class="w-8 h-8 rounded-full ${s.done ? 'bg-fresh-mint' : 'bg-bg-lightgrey'} flex items-center justify-center text-sm shadow-sm">${s.done ? '✅' : '◻️'}</div><div><p class="text-sm font-bold ${s.done ? 'text-soft-black' : 'text-gray-400'}">${s.l}</p><p class="text-xs text-gray-500">${s.d}</p></div></div>`).join('')}</div>
+        ${o.status === 'completed' && !o.rating ? `<div class="bg-bg-offwhite rounded-card p-4 mb-4 text-center"><p class="text-sm font-bold text-soft-black mb-2">How was your meal?</p><div class="flex justify-center gap-2 text-2xl">${[1, 2, 3, 4, 5].map(r => `<button class="hover:scale-125 transition-transform btn-press" onclick="rateOrder(${o.id},${r})">${'⭐'.repeat(r)}</button>`).join('')}</div></div>` : ''}
+        <button class="w-full py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press" onclick="switchOrderTab('active');showScreen('orders')">My Orders</button>`;
+      showScreen('tracking');
+    }
+
+    function rateOrder(orderId, rating) {
+      const o = allOrders.find(x => x.id === orderId); if (o) { o.rating = rating; streakData.points += 5; saveState(); showTracking(orderId); }
+    }
+
+    let orderTab = 'active';
+    function switchOrderTab(tab) {
+      orderTab = tab;
+      document.getElementById('tab-active').className = tab === 'active' ? 'flex-1 py-2 rounded-btn text-xs font-bold bg-white shadow-sm text-soft-black transition-all' : 'flex-1 py-2 rounded-btn text-xs font-medium text-gray-500 hover:text-soft-black transition-all';
+      document.getElementById('tab-history').className = tab === 'history' ? 'flex-1 py-2 rounded-btn text-xs font-bold bg-white shadow-sm text-soft-black transition-all' : 'flex-1 py-2 rounded-btn text-xs font-medium text-gray-500 hover:text-soft-black transition-all';
+      renderOrders();
+    }
+    function renderOrders() {
+      const c = document.getElementById('orders-content');
+      const mine = allOrders.filter(o => o.userEmail === loggedInUser.email);
+      const activeOrders = mine.filter(o => ['confirmed', 'preparing', 'ready', 'out_for_delivery'].includes(o.status));
+      const historyOrders = mine.filter(o => ['completed', 'cancelled', 'missed'].includes(o.status));
+      const list = orderTab === 'active' ? activeOrders : historyOrders;
+      if (!list.length) {
+        c.innerHTML = orderTab === 'active'
+          ? `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">🟢</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">No active orders</h3><p class="text-sm text-gray-500 mb-5">Place an order and it'll show up here!</p><button class="px-8 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press" onclick="showScreen('home')">Browse Menu</button></div>`
+          : `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">📋</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">No history yet</h3><p class="text-sm text-gray-500 mb-5">Completed orders will appear here.</p></div>`;
+        return;
+      }
+      var deleteBtn = orderTab === 'history' ? '<button class="text-xs text-soft-coral font-medium btn-press" onclick="deleteAllHistory()">Delete all</button>' : '<span></span>';
+      c.innerHTML = '<div class="flex items-center justify-between mb-3">' + deleteBtn + '<span class="text-xs text-gray-400">' + list.length + ' order' + (list.length > 1 ? 's' : '') + '</span></div>' + list.map(o => {
+        const sc = { confirmed: 'bg-soft-yellow', preparing: 'bg-soft-blue', ready: 'bg-fresh-mint', 'out_for_delivery': 'bg-soft-lavender', completed: 'bg-fresh-green', cancelled: 'bg-soft-coral', missed: 'bg-soft-coral' }[o.status] || 'bg-bg-lightgrey';
+        var delIcon = orderTab === 'history' ? '<button class="text-gray-400 hover:text-soft-coral transition-colors text-lg btn-press" onclick="deleteOrder(' + o.id + ')">✕</button>' : '';
+        var cancelBtn = orderTab === 'active' && o.status === 'confirmed' ? '<button class="text-xs text-soft-coral font-bold px-3 py-1.5 rounded-btn border border-soft-coral btn-press" onclick="cancelOrder(' + o.id + ')">Cancel</button>' : '';
+        return '<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-3 fade-in"><div class="flex items-center justify-between mb-2"><span class="text-xs font-medium ' + sc + ' px-2 py-0.5 rounded-full capitalize">' + o.status.replace('_', ' ') + '</span><span class="text-xs text-gray-400">#' + String(o.id).slice(-6) + '</span></div><div class="flex items-center gap-3"><span class="text-3xl">' + o.items[0].emoji + '</span><div class="flex-1 cursor-pointer" onclick="showTracking(' + o.id + ')"><p class="font-heading font-bold text-soft-black text-sm">' + o.items[0].name + (o.items.length > 1 ? ' +' + (o.items.length - 1) + ' more' : '') + '</p><p class="text-xs text-gray-500">' + (o.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery') + ' · ' + o.timeSlot + '</p></div><span class="font-heading font-bold text-soft-black">₹' + o.total + '</span>' + delIcon + '</div>' + cancelBtn + '</div>';
+      }).join('');
+    }
+    function deleteOrder(id) {
+      if (!confirm('Delete this order from history?')) return;
+      const idx = allOrders.findIndex(x => x.id === id);
+      if (idx > -1) { allOrders.splice(idx, 1); saveState(); renderOrders(); }
+    }
+    function cancelOrder(id) {
+      if (!confirm('Cancel this order?')) return;
+      const o = allOrders.find(x => x.id === id);
+      if (o && o.status === 'confirmed') { o.status = 'cancelled'; saveState(); renderOrders(); }
+    }
+    function deleteAllHistory() {
+      if (!confirm('Delete all history?')) return;
+      for (let i = allOrders.length - 1; i >= 0; i--) { if (['completed', 'cancelled', 'missed'].includes(allOrders[i].status)) allOrders.splice(i, 1); }
+      saveState(); renderOrders();
+    }
+
+    function renderStreaks() {
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const wh = streakData.weekLog.map((d, i) => `<div class="flex flex-col items-center gap-1"><div class="w-10 h-10 rounded-full ${d ? 'bg-fresh-mint text-soft-black' : 'bg-bg-lightgrey text-gray-400'} flex items-center justify-center text-sm font-bold shadow-sm transition-all">${d ? '✅' : '○'}</div><span class="text-[10px] text-gray-400">${days[i]}</span></div>`).join('');
+      document.getElementById('streaks-content').innerHTML = `
+        <div class="text-center mb-6 fade-in"><span class="text-5xl block mb-2">⭐</span><h2 class="text-xl font-heading font-bold text-soft-black">Healthy Streaks</h2><p class="text-sm text-gray-500">Order daily to build your streak!</p></div>
+        <div class="grid grid-cols-2 gap-3 mb-4"><div class="bg-gradient-to-br from-bg-green-tint to-fresh-mint/30 rounded-card p-4 text-center shadow-sm"><span class="text-3xl font-heading font-bold text-fresh-green">${streakData.currentStreak}</span><p class="text-xs font-medium text-gray-600 mt-1">🔥 Current Streak</p></div><div class="bg-gradient-to-br from-soft-yellow/30 to-soft-yellow/10 rounded-card p-4 text-center shadow-sm"><span class="text-3xl font-heading font-bold text-soft-black">${streakData.longestStreak}</span><p class="text-xs font-medium text-gray-600 mt-1">🏆 Longest</p></div></div>
+        <div class="bg-white rounded-card p-4 mb-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-3">This Week</h4><div class="flex justify-between">${wh}</div></div>
+        <div class="bg-white rounded-card p-4 mb-4 border border-bg-lightgrey shadow-sm"><div class="flex items-center justify-between mb-2"><h4 class="font-heading font-bold text-soft-black text-sm">🌱 Reward Points</h4><span class="text-lg font-heading font-bold text-fresh-green">${streakData.points}</span></div><div class="w-full bg-bg-lightgrey rounded-full h-3"><div class="bg-gradient-to-r from-fresh-mint to-fresh-green h-3 rounded-full transition-all shadow-sm" style="width:${Math.min(100, (streakData.points / 500) * 100)}%"></div></div><p class="text-xs text-gray-400 mt-2">${500 - (streakData.points % 500)} points until next reward 🎁</p></div>
+        <div class="bg-soft-yellow/20 rounded-card p-4 border border-soft-yellow/40"><div class="flex items-start gap-3"><span class="text-xl">💡</span><div><p class="text-sm font-bold text-soft-black">Keep your streak alive!</p><p class="text-xs text-gray-500 leading-relaxed">Order at least one healthy meal every day. Miss a day and your streak resets. You've got this! 💪</p></div></div></div>`;
+    }
+
+    function renderProfile() {
+      const c = document.getElementById('profile-content');
+      if (!isLoggedIn) { c.innerHTML = `<div class="text-center py-16 fade-in"><span class="text-6xl block mb-4">👤</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">Not signed in</h3><p class="text-sm text-gray-500 mb-5">Sign in to manage your profile</p><button class="px-8 py-3 rounded-btn bg-soft-black text-white font-bold text-sm btn-press" onclick="document.getElementById('login-overlay').classList.remove('hidden')">Sign In</button></div>`; return; }
+      c.innerHTML = `
+        <div class="text-center mb-6 pt-4 fade-in"><div class="w-20 h-20 rounded-full bg-gradient-to-br from-bg-green-tint to-fresh-mint flex items-center justify-center text-4xl mx-auto mb-3 shadow-md">👤</div><h2 class="text-xl font-heading font-bold text-soft-black">${loggedInUser.name}</h2><p class="text-sm text-gray-500">${loggedInUser.email}</p></div>
+        <div class="space-y-2 mb-4">
+          <div class="flex items-center justify-between bg-bg-offwhite rounded-btn p-3"><span class="text-sm font-medium text-soft-black">📱 Phone</span><span class="text-sm text-gray-500">${loggedInUser.phone || '+91 98765 43210'}</span></div>
+          <div class="flex items-center justify-between bg-bg-offwhite rounded-btn p-3"><span class="text-sm font-medium text-soft-black">🏢 IT Park</span><span class="text-sm text-gray-500">${loggedInUser.location || 'Tech Park, Floor 4'}</span></div>
+          ${loggedInUser.role === 'worker' || loggedInUser.role === 'delivery' ? `<div class="flex items-center justify-between bg-bg-offwhite rounded-btn p-3"><span class="text-sm font-medium text-soft-black">⭐ Streak</span><span class="text-sm text-fresh-green font-bold">${streakData.currentStreak} days</span></div>
+          <div class="flex items-center justify-between bg-bg-offwhite rounded-btn p-3"><span class="text-sm font-medium text-soft-black">🌱 Points</span><span class="text-sm text-fresh-green font-bold">${streakData.points}</span></div>` : ''}
+        </div>
+        <div class="space-y-2 mb-4">
+          ${loggedInUser.role === 'worker' ? `<button class="w-full text-left bg-white rounded-btn p-3 text-sm font-medium text-soft-black hover:bg-bg-offwhite transition-colors border border-bg-lightgrey shadow-sm flex items-center gap-3 btn-press" onclick="showScreen('orders')"><span>📋</span> My Orders</button>` : ''}
+          <button class="w-full text-left bg-white rounded-btn p-3 text-sm font-medium text-soft-black hover:bg-bg-offwhite transition-colors border border-bg-lightgrey shadow-sm flex items-center gap-3 btn-press" onclick="showScreen('suggest')"><span>💡</span> Suggest a Meal</button>
+          ${loggedInUser.role === 'worker' ? `<button class="w-full text-left bg-white rounded-btn p-3 text-sm font-medium text-soft-black hover:bg-bg-offwhite transition-colors border border-bg-lightgrey shadow-sm flex items-center gap-3 btn-press" onclick="alert('Payment methods coming soon!')"><span>💳</span> Payment Methods</button>` : ''}
+        </div>
+        <div class="border-t border-bg-lightgrey pt-4 mb-4"><p class="text-xs text-gray-400 mb-2 font-medium">Logged in as: <span class="font-bold text-soft-black capitalize">${loggedInUser.role}</span></p><p class="text-xs text-gray-400">Sign out to switch to a different role.</p></div>
+        <button class="w-full py-3 rounded-btn border border-soft-coral text-soft-coral font-bold text-sm hover:bg-soft-coral hover:text-white transition-all btn-press" onclick="signOut()">Sign Out</button>`;
+    }
+
+    function submitSuggestion() {
+      const name = document.getElementById('suggest-name').value.trim();
+      const desc = document.getElementById('suggest-desc').value.trim();
+      const why = document.getElementById('suggest-why').value.trim();
+      if (!name || !desc) { alert('Please fill in the meal name and description!'); return; }
+      mealSuggestions.push({ id: Date.now(), name, desc, why, user: loggedInUser.email, date: new Date(), status: 'pending' });
+      saveState();
+      document.getElementById('suggest-name').value = ''; document.getElementById('suggest-desc').value = ''; document.getElementById('suggest-why').value = '';
+      alert('Thanks for your suggestion! 🌿 Our team will review it.');
+      showScreen('profile');
+    }
+
+    // ========== VENDOR ==========
+    function renderVendor() {
+      const c = document.getElementById('vendor-content');
+      const io = allOrders.filter(o => o.status === 'confirmed' || o.status === 'preparing');
+      const appSugs = mealSuggestions.filter(s => s.status === 'approved');
+      c.innerHTML = `
+        <div class="grid grid-cols-3 gap-2 mb-4"><div class="bg-gradient-to-br from-bg-green-tint to-fresh-mint/30 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-fresh-green">${vendorMeals.length}</span><p class="text-[10px] text-gray-600">Meals</p></div><div class="bg-gradient-to-br from-soft-yellow/30 to-soft-yellow/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${io.length}</span><p class="text-[10px] text-gray-600">Pending</p></div><div class="bg-gradient-to-br from-soft-blue/30 to-soft-blue/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${allOrders.length}</span><p class="text-[10px] text-gray-600">Total</p></div></div>
+        <h4 class="font-heading font-bold text-soft-black text-sm mb-3">🍳 Your Meals</h4>
+        ${vendorMeals.map(m => `<div class="flex items-center gap-3 bg-bg-offwhite rounded-card p-3 mb-2"><span class="text-2xl">${m.emoji}</span><div class="flex-1 min-w-0"><p class="text-sm font-bold text-soft-black">${m.name}</p><p class="text-xs text-gray-500">₹${m.price} · Stock: ${m.stock}</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" ${m.available ? 'checked' : ''} onchange="toggleMeal(${m.id})" class="sr-only peer" /><div class="w-9 h-5 bg-bg-lightgrey rounded-full peer peer-checked:bg-fresh-green after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full shadow-sm"></div></label></div>`).join('')}
+        ${appSugs.length ? `<h4 class="font-heading font-bold text-soft-black text-sm mb-3 mt-4">✅ Approved Suggestions</h4>${appSugs.map(s => `<div class="bg-white rounded-card p-3 mb-2 border border-fresh-mint shadow-sm flex items-center gap-3"><span class="text-2xl">🍽️</span><div class="flex-1 min-w-0"><p class="text-sm font-bold text-soft-black">${s.name}</p><p class="text-xs text-gray-500">${s.desc}</p></div><button class="px-3 py-1.5 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm whitespace-nowrap" onclick="addSuggestionToMenu(${s.id})">+ Add</button></div>`).join('')}` : ''}
+        <h4 class="font-heading font-bold text-soft-black text-sm mb-3 mt-4">📋 Incoming Orders</h4>
+        ${io.length ? io.map(o => `<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-2"><div class="flex items-center justify-between mb-2"><span class="text-xs font-medium ${o.status === 'confirmed' ? 'bg-soft-yellow' : 'bg-soft-blue'} px-2 py-0.5 rounded-full capitalize">${o.status}</span></div>${o.items.map(i => `<div class="flex items-center gap-3 mb-1"><span class="text-2xl">${i.emoji}</span><div class="flex-1"><p class="text-sm font-bold text-soft-black">${i.name} ×${i.qty}</p></div></div>`).join('')}<div class="flex items-center justify-between text-xs text-gray-500 mt-2 mb-3"><span>${o.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery'}</span><span>⏰ ${o.timeSlot}</span></div><div class="flex gap-2">${o.status === 'confirmed' ? `<button class="flex-1 py-2 rounded-btn bg-soft-blue text-soft-black text-xs font-bold btn-press shadow-sm" onclick="updateOrderStatus(${o.id},'preparing')">Start Preparing</button>` : ''}${o.status === 'preparing' ? `<button class="flex-1 py-2 rounded-btn bg-fresh-mint text-soft-black text-xs font-bold btn-press shadow-sm" onclick="updateOrderStatus(${o.id},'ready')">Mark Ready</button>` : ''}</div></div>`).join('') : `<div class="text-center py-8 bg-white rounded-card border border-bg-lightgrey"><span class="text-4xl block mb-2">🎉</span><p class="text-sm text-gray-500">No incoming orders</p></div>`}`;
+    }
+    function toggleMeal(id) { const m = vendorMeals.find(x => x.id === id); if (m) m.available = !m.available; }
+    function updateOrderStatus(oid, s) {
+      const o = allOrders.find(x => x.id === oid); if (!o) return;
+      if (s === 'ready' && o.orderType === 'pickup') s = 'completed';
+      o.status = s; if (s === 'preparing') o.preparedBy = loggedInUser.name; if (s === 'ready') { o.preparedBy = loggedInUser.name; o.readyAt = new Date(); } saveState(); renderVendor();
+    }
+    function addSuggestionToMenu(sid) { const s = mealSuggestions.find(x => x.id === sid); if (!s) return; const newId = Math.max(...meals.map(m => m.id), 0) + 1; const newMeal = { id: newId, name: s.name, emoji: '🍽️', price: 199, description: s.desc, ingredients: s.desc, calories: 300, protein: 15, fibre: 8, tag: 'Suggested' }; meals.push(newMeal); vendorMeals.push({ ...newMeal, available: true, stock: 10 }); s.status = 'added'; saveState(); renderVendor(); }
+
+    // ========== DELIVERY ==========
+    function renderDelivery() {
+      const c = document.getElementById('delivery-content');
+      const av = allOrders.filter(o => o.status === 'ready' && o.orderType === 'delivery' && !o.deliveryAssigned);
+      const md = allOrders.filter(o => o.deliveryAssigned && o.status !== 'completed');
+      c.innerHTML = `
+        <div class="grid grid-cols-2 gap-2 mb-4"><div class="bg-gradient-to-br from-soft-blue/30 to-soft-blue/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${av.length}</span><p class="text-[10px] text-gray-600">Available</p></div><div class="bg-gradient-to-br from-soft-yellow/30 to-soft-yellow/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${md.length}</span><p class="text-[10px] text-gray-600">My Deliveries</p></div></div>
+        ${av.length ? `<h4 class="font-heading font-bold text-soft-black text-sm mb-3">📦 Available Deliveries</h4>${av.map(o => `<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-2">${o.items.map(i => `<div class="flex items-center gap-3 mb-1"><span class="text-2xl">${i.emoji}</span><div class="flex-1"><p class="text-sm font-bold text-soft-black">${i.name} ×${i.qty}</p></div></div>`).join('')}<div class="text-xs text-gray-500 mb-1">📍 ${o.items[0]?.location || 'No location specified'}</div><div class="text-xs text-gray-500 mb-3">⏰ ${o.timeSlot}</div><button class="w-full py-2 rounded-btn bg-fresh-mint text-soft-black text-xs font-bold btn-press shadow-sm" onclick="acceptDelivery(${o.id})">Accept Delivery</button></div>`).join('')}` : `<div class="text-center py-8 bg-white rounded-card border border-bg-lightgrey mb-4"><span class="text-4xl block mb-2">🚚</span><p class="text-sm text-gray-500">No deliveries available</p></div>`}
+        ${md.length ? `<h4 class="font-heading font-bold text-soft-black text-sm mb-3 mt-4">📋 My Deliveries</h4>${md.map(o => `<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-2">${o.items.map(i => `<div class="flex items-center gap-3 mb-1"><span class="text-2xl">${i.emoji}</span><div class="flex-1"><p class="text-sm font-bold text-soft-black">${i.name} ×${i.qty}</p></div></div>`).join('')}<div class="text-xs text-gray-500 mb-1">📍 ${o.items[0]?.location || 'No location specified'}</div><div class="text-xs text-gray-500 mb-3">⏰ ${o.timeSlot}</div><button class="w-full py-2 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="completeDelivery(${o.id})">Mark Delivered ✅</button></div>`).join('')}` : ''}`;
+    }
+    function acceptDelivery(oid) { const o = allOrders.find(x => x.id === oid); if (o) { o.deliveryAssigned = true; o.deliveredBy = loggedInUser.name; o.status = 'out_for_delivery'; saveState(); renderDelivery(); } }
+    function completeDelivery(oid) { const o = allOrders.find(x => x.id === oid); if (o) { o.status = 'completed'; o.deliveredAt = new Date(); saveState(); renderDelivery(); } }
+
+    // ========== ADMIN ==========
+    function renderAdmin() {
+      const c = document.getElementById('admin-content'); const tr = allOrders.reduce((s, o) => s + o.total, 0);
+      const pendSugs = mealSuggestions.filter(s => s.status === 'pending');
+      c.innerHTML = `
+        <div class="grid grid-cols-2 gap-2 mb-4"><div class="bg-gradient-to-br from-bg-green-tint to-fresh-mint/30 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-fresh-green">${allOrders.length}</span><p class="text-[10px] text-gray-600">Orders</p></div><div class="bg-gradient-to-br from-soft-yellow/30 to-soft-yellow/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">₹${tr}</span><p class="text-[10px] text-gray-600">Revenue</p></div></div>
+        <div class="grid grid-cols-2 gap-2 mb-4"><div class="bg-gradient-to-br from-soft-blue/30 to-soft-blue/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${vendorMeals.length}</span><p class="text-[10px] text-gray-600">Meals</p></div><div class="bg-gradient-to-br from-soft-lavender/30 to-soft-lavender/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${allOrders.filter(o => o.status === 'completed').length}</span><p class="text-[10px] text-gray-600">Completed</p></div></div>
+        <h4 class="font-heading font-bold text-soft-black text-sm mb-3">📋 All Orders</h4>
+        ${allOrders.length ? allOrders.map(o => `<div class="bg-white rounded-card p-3 mb-2 border border-bg-lightgrey shadow-sm"><div class="flex items-center justify-between mb-1"><p class="text-sm font-bold text-soft-black">👤 ${o.userName || 'User'}</p><p class="text-[10px] text-gray-500">🕐 ${new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p></div><p class="text-xs text-gray-700 mb-1">${o.items.map(i => `${i.emoji} ${i.name} ×${i.qty}`).join(', ')}</p><p class="text-xs text-gray-500 capitalize">${o.status} · ₹${o.total} · 💳 ${o.paymentMethod}</p><p class="text-[10px] text-gray-500 mt-1">🍳 Prepared by: ${o.preparedBy || '—'} · 🛵 Delivery: ${o.deliveredBy || '—'}</p><div class="flex gap-1 mt-2">${o.status === 'confirmed' ? `<button class="px-2 py-1 rounded-btn bg-soft-blue text-white text-[10px] font-bold btn-press shadow-sm" onclick="adminUpdateStatus(${o.id},'preparing')">Prep</button>` : ''}${o.status === 'preparing' ? `<button class="px-2 py-1 rounded-btn bg-fresh-mint text-soft-black text-[10px] font-bold btn-press shadow-sm" onclick="adminUpdateStatus(${o.id},'ready')">Ready</button>` : ''}${o.status === 'ready' && o.orderType === 'pickup' ? `<button class="px-2 py-1 rounded-btn bg-fresh-green text-white text-[10px] font-bold btn-press shadow-sm" onclick="adminUpdateStatus(${o.id},'completed')">Done</button>` : ''}</div></div>`).join('') : `<div class="text-center py-8 bg-white rounded-card border border-bg-lightgrey"><span class="text-4xl block mb-2">📊</span><p class="text-sm text-gray-500">No orders yet</p></div>`}
+        <h4 class="font-heading font-bold text-soft-black text-sm mb-3 mt-4">💡 Meal Suggestions (${pendSugs.length})</h4>
+        ${pendSugs.length ? pendSugs.map(s => `<div class="bg-white rounded-card p-4 mb-2 border border-soft-yellow shadow-sm"><div class="flex items-start justify-between mb-1"><h4 class="font-heading font-bold text-soft-black text-sm">${s.name}</h4><span class="text-xs bg-soft-yellow px-2 py-0.5 rounded-full">Pending</span></div><p class="text-xs text-gray-500 mb-1">${s.desc}</p><p class="text-xs text-gray-400 mb-2">💚 ${s.why} · by ${s.user}</p><button class="px-4 py-1.5 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="approveSuggestion(${s.id})">✅ Approve & Send to Vendor</button></div>`).join('') : `<div class="text-center py-6 bg-white rounded-card border border-bg-lightgrey"><span class="text-2xl block mb-1">💡</span><p class="text-sm text-gray-500">No pending suggestions</p></div>`}
+      `;
+    }
+    function adminUpdateStatus(oid, s) { const o = allOrders.find(x => x.id === oid); if (o) { o.status = s; saveState(); renderAdmin(); } }
+    function approveSuggestion(sid) { const s = mealSuggestions.find(x => x.id === sid); if (s) { s.status = 'approved'; saveState(); renderAdmin(); } }
+
+    // ========== AUTH ==========
+    function handleOrderClick(mealId) { if (isLoggedIn && loggedInUser.role === 'worker') { showMealDetail(mealId); } else { document.getElementById('login-overlay').classList.remove('hidden'); currentMealId = mealId; } }
+    function loginAs(role) {
+      isLoggedIn = true; loggedInUser = { name: role.charAt(0).toUpperCase() + role.slice(1), email: role + '@fresheats.com', role: role };
+      saveState(); document.getElementById('login-overlay').classList.add('hidden');
+      document.getElementById('greeting').innerHTML = `Welcome, ${loggedInUser.name}! 👋`;
+      if (role === 'worker') showScreen('home');
+      else switchRole(role);
+    }
+    function showEmailAuth() { document.getElementById('login-overlay').classList.add('hidden'); showScreen('auth'); document.getElementById('auth-content').innerHTML = `<div class="text-center mb-8"><span class="text-7xl block mb-3">🌿</span><h2 class="text-3xl font-heading font-bold text-soft-black">FreshEats</h2><p class="text-sm text-gray-500 mt-1 font-medium">Fresh. Healthy. Quick.</p></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Email</label><input type="email" id="auth-email" placeholder="you@company.com" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-4"><label class="text-xs font-bold text-gray-500 mb-1 block">Password</label><input type="password" id="auth-password" placeholder="Your password" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><button class='w-full py-4 rounded-2xl bg-fresh-green text-white font-bold text-base border-b-4 border-green-700 hover:brightness-105 active:translate-y-0.5 transition-all shadow-lg' onclick='loginWithEmail()'>LOG IN</button><p class="text-xs text-gray-400 text-center mt-4">New here? <button class="text-fresh-green font-bold hover:underline" onclick="showSignup()">Create an account</button></p>`; }
+    function loginWithEmail() {
+      const emailEl = document.getElementById('auth-email'); const passEl = document.getElementById('auth-password');
+      const email = emailEl?.value.trim().toLowerCase(); const pass = passEl?.value;
+      if (!email) { emailEl?.focus(); emailEl?.classList.add('border-soft-coral'); alert('Please enter your email'); return; }
+      if (!pass) { passEl?.focus(); passEl?.classList.add('border-soft-coral'); alert('Please enter your password'); return; }
+      const acc = accounts.find(a => a.email.toLowerCase() === email);
+      if (!acc) { alert('No account found with this email. Please create a FreshEats account first.'); return; }
+      if (acc.password !== pass) { passEl?.focus(); passEl?.classList.add('border-soft-coral'); alert('Incorrect password. Please try again.'); return; }
+      const role = acc.role || 'worker';
+      isLoggedIn = true; loggedInUser = { name: acc.name, email: acc.email, role: role, phone: acc.phone || '+91 98765 43210', location: acc.location || 'Tech Park, Floor 4' };
+      saveState(); document.getElementById('greeting').innerHTML = `Welcome, ${loggedInUser.name}! 👋`;
+      document.getElementById('screen-auth').classList.remove('active');
+      if (role === 'worker') showScreen('home');
+      else switchRole(role);
+    }
+    function signupWithEmail() {
+      const nameEl = document.getElementById('auth-name'); const emailEl = document.getElementById('auth-email');
+      const passEl = document.getElementById('auth-password'); const phoneEl = document.getElementById('auth-phone'); const locEl = document.getElementById('auth-location');
+      const name = nameEl?.value.trim(); const email = emailEl?.value.trim().toLowerCase();
+      const pass = passEl?.value; const phone = phoneEl?.value.trim(); const location = locEl?.value.trim();
+      if (!name) { nameEl?.focus(); nameEl?.classList.add('border-soft-coral'); alert('Please enter your name'); return; }
+      if (!email) { emailEl?.focus(); emailEl?.classList.add('border-soft-coral'); alert('Please enter your email'); return; }
+      if (!pass) { passEl?.focus(); passEl?.classList.add('border-soft-coral'); alert('Please create a password'); return; }
+      if (!phone) { phoneEl?.focus(); phoneEl?.classList.add('border-soft-coral'); alert('Please enter your phone number'); return; }
+      if (!location) { locEl?.focus(); locEl?.classList.add('border-soft-coral'); alert('Please enter your location'); return; }
+      if (accounts.some(a => a.email.toLowerCase() === email)) { alert('An account with this email already exists. Please log in.'); return; }
+      const role = document.querySelector('input[name="auth-role"]:checked')?.value || 'worker';
+      accounts.push({ name: name, email: email, password: pass, phone: phone, location: location, role: role });
+      saveState();
+      isLoggedIn = true; loggedInUser = { name: name, email: email, role: role, phone: phone, location: location };
+      saveState(); document.getElementById('greeting').innerHTML = `Welcome, ${loggedInUser.name}! 👋`;
+      document.getElementById('screen-auth').classList.remove('active');
+      if (role === 'worker') showScreen('home');
+      else switchRole(role);
+    }
+    function showSignup() { document.getElementById('auth-content').innerHTML = `<div class="text-center mb-8"><span class="text-7xl block mb-3">🌿</span><h2 class="text-3xl font-heading font-bold text-soft-black">FreshEats</h2><p class="text-sm text-gray-500 mt-1 font-medium">Fresh. Healthy. Quick.</p></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Full Name</label><input type="text" id="auth-name" placeholder="Your name" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Email</label><input type="email" id="auth-email" placeholder="you@company.com" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Password</label><input type="password" id="auth-password" placeholder="Create a password" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Phone Number</label><input type="tel" id="auth-phone" placeholder="+91 98765 43210" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Location</label><input type="text" id="auth-location" placeholder="Tech Park, Floor 4" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-4"><label class="text-xs font-bold text-gray-500 mb-2 block">I am a</label><div class="grid grid-cols-2 gap-2"><label class="cursor-pointer"><input type="radio" name="auth-role" value="worker" checked class="peer hidden" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">👤</span><span class="text-xs font-bold text-soft-black">Worker</span></div></label><label class="cursor-pointer"><input type="radio" name="auth-role" value="vendor" class="peer hidden" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">🍳</span><span class="text-xs font-bold text-soft-black">Vendor</span></div></label><label class="cursor-pointer"><input type="radio" name="auth-role" value="delivery" class="peer hidden" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">🚚</span><span class="text-xs font-bold text-soft-black">Delivery</span></div></label><label class="cursor-pointer"><input type="radio" name="auth-role" value="admin" class="peer hidden" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">🛡️</span><span class="text-xs font-bold text-soft-black">Admin</span></div></label></div></div><button class='w-full py-4 rounded-2xl bg-fresh-green text-white font-bold text-base border-b-4 border-green-700 hover:brightness-105 active:translate-y-0.5 transition-all shadow-lg' onclick='signupWithEmail()'>CREATE ACCOUNT</button><p class="text-xs text-gray-400 text-center mt-4">Already have an account? <button class="text-fresh-green font-bold hover:underline" onclick="showEmailAuth()">Log in</button></p>`; }
+    function signOut() { isLoggedIn = false; loggedInUser = { name: 'You', email: 'you@example.com', role: 'worker' }; cart = []; document.getElementById('role-badge').classList.add('hidden'); saveState(); showEmailAuth(); document.getElementById('bottom-nav').classList.add('hidden'); }
+
+    function switchRole(role) {
+      loggedInUser.role = role; const b = document.getElementById('role-badge');
+      document.getElementById('nav-streaks-btn').classList.toggle('hidden', role !== 'worker' && role !== 'delivery');
+      if (role === 'worker') { b.classList.add('hidden'); showScreen('home'); return; }
+      b.classList.remove('hidden'); b.textContent = role.charAt(0).toUpperCase() + role.slice(1); showScreen(role);
+    }
+
+    function showScreen(name) {
+      if (!isLoggedIn && name !== 'auth') { document.getElementById('bottom-nav').classList.add('hidden'); showEmailAuth(); return; }
+      if (name === 'auth' && !isLoggedIn) document.getElementById('bottom-nav').classList.add('hidden'); else document.getElementById('bottom-nav').classList.remove('hidden');
+      if (name === 'home' && isLoggedIn && loggedInUser.role !== 'worker') name = loggedInUser.role;
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      if (name === 'home') renderHome(); if (name === 'cart') renderCart(); if (name === 'orders') renderOrders(); if (name === 'streaks') renderStreaks(); if (name === 'profile') renderProfile();
+      if (name === 'vendor') renderVendor(); if (name === 'delivery') renderDelivery(); if (name === 'admin') renderAdmin();
+      const el = document.getElementById('screen-' + name); if (el) el.classList.add('active');
+      document.querySelectorAll('[class*="nav-"]').forEach(b => b.classList.remove('text-fresh-green'));
+      const nb = document.querySelector('.nav-' + name); if (!nb && (name === 'vendor' || name === 'delivery' || name === 'admin')) document.querySelector('.nav-home').classList.add('text-fresh-green'); else if (nb) nb.classList.add('text-fresh-green');
+    }
+    function showMealDetail(mid) { currentMealId = mid; renderMealDetail(mid); showScreen('meal'); }
+
+    if (isLoggedIn) { renderHome(); updateCart(); document.getElementById('greeting').innerHTML = `Welcome, ${loggedInUser.name}! 👋`; if (loggedInUser.role !== 'worker') switchRole(loggedInUser.role); }
+    else { showEmailAuth(); }
+  </script>
+</body>
+
+</html>
+
