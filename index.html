@@ -172,16 +172,30 @@
           class="w-full pl-10 pr-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm font-body focus:outline-none focus:border-fresh-mint transition-all" />
       </div>
       <div class="flex gap-2 overflow-x-auto pb-3 mb-3 scrollbar-hide">
-        <button
-          class="px-4 py-2 rounded-full text-sm font-medium bg-fresh-mint text-soft-black whitespace-nowrap">All</button>
-        <button
-          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap">Bowls</button>
-        <button
-          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap">Wraps</button>
-        <button
-          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap">Salads</button>
-        <button
-          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap">Smoothies</button>
+        <button id="cat-All"
+          class="px-4 py-2 rounded-full text-sm font-medium bg-fresh-mint text-soft-black whitespace-nowrap"
+          onclick="filterCategory('All')">All</button>
+        <button id="cat-Bowls"
+          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap"
+          onclick="filterCategory('Bowls')">Bowls</button>
+        <button id="cat-Wraps"
+          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap"
+          onclick="filterCategory('Wraps')">Wraps</button>
+        <button id="cat-Salads"
+          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap"
+          onclick="filterCategory('Salads')">Salads</button>
+        <button id="cat-Smoothies"
+          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap"
+          onclick="filterCategory('Smoothies')">Smoothies</button>
+        <button id="cat-Snacks"
+          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap"
+          onclick="filterCategory('Snacks')">Snacks</button>
+        <button id="cat-Desserts"
+          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap"
+          onclick="filterCategory('Desserts')">Desserts</button>
+        <button id="cat-Beverages"
+          class="px-4 py-2 rounded-full text-sm font-medium bg-white border border-bg-lightgrey text-gray-600 whitespace-nowrap"
+          onclick="filterCategory('Beverages')">Beverages</button>
       </div>
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-lg font-heading font-bold text-soft-black">Today's Menu</h3><span
@@ -388,9 +402,28 @@
       { id: 3, name: 'Berry Protein Smoothie', emoji: '🥤', price: 169, description: 'Mixed berries, banana, whey protein, and almond milk — creamy and refreshing.', ingredients: 'Mixed berries, banana, vanilla whey protein, unsweetened almond milk, honey.', calories: 220, protein: 18, fibre: 5, tag: 'Smoothies' },
       { id: 4, name: 'Mediterranean Salad', emoji: '🥗', price: 219, description: 'Crisp romaine, feta cheese, olives, cherry tomatoes, and a zesty oregano vinaigrette.', ingredients: 'Romaine lettuce, feta cheese, kalamata olives, cherry tomatoes, red onion, cucumber, oregano vinaigrette.', calories: 260, protein: 10, fibre: 7, tag: 'Salads' },
       { id: 5, name: 'Teriyaki Tofu Bowl', emoji: '🍚', price: 229, description: 'Pan-seared tofu with broccoli, edamame, brown rice, and teriyaki glaze.', ingredients: 'Firm tofu, broccoli, edamame, brown rice, teriyaki sauce, sesame seeds, green onion.', calories: 380, protein: 22, fibre: 10, tag: 'Bowls' },
+      { id: 6, name: 'Spicy Paneer Tikka Bowl', emoji: '🌶️', price: 259, description: 'Charred paneer tikka, jeera rice, mint chutney, and crunchy onions.', ingredients: 'Paneer, jeera rice, yogurt, mint chutney, onions, bell peppers, spices.', calories: 420, protein: 24, fibre: 9, tag: 'Bowls' },
+      { id: 7, name: 'Mushroom Alfredo Pasta', emoji: '🍝', price: 279, description: 'Creamy garlic alfredo pasta tossed with sautéed mushrooms and herbs.', ingredients: 'Penne pasta, button mushrooms, cream, garlic, parmesan, parsley, olive oil.', calories: 540, protein: 18, fibre: 6, tag: 'Bowls' },
+      { id: 8, name: 'BBQ Chicken Loaded Sandwich', emoji: '🥪', price: 219, description: 'Smoky BBQ chicken, cheddar, slaw, and pickles in toasted sourdough.', ingredients: 'Chicken breast, BBQ sauce, cheddar, cabbage slaw, pickles, sourdough bread.', calories: 480, protein: 32, fibre: 7, tag: 'Wraps' },
+      { id: 9, name: 'Falafel Hummus Pita', emoji: '🧆', price: 209, description: 'Crispy falafel, creamy hummus, fresh veg, and tahini in a warm pita.', ingredients: 'Chickpea falafel, hummus, pita, lettuce, tomato, cucumber, tahini sauce.', calories: 430, protein: 16, fibre: 12, tag: 'Wraps' },
+      { id: 10, name: 'Egg Mayo Crunch Wrap', emoji: '🌯', price: 189, description: 'Boiled eggs, creamy mayo, crunchy lettuce, and mustard in a soft tortilla.', ingredients: 'Eggs, mayonnaise, lettuce, mustard, whole wheat tortilla, black pepper.', calories: 360, protein: 18, fibre: 5, tag: 'Wraps' },
+      { id: 11, name: 'Greek Quinoa Salad', emoji: '🥗', price: 239, description: 'Protein-rich quinoa with feta, olives, cucumber, and a lemon herb dressing.', ingredients: 'Quinoa, feta cheese, kalamata olives, cucumber, cherry tomatoes, oregano, lemon dressing.', calories: 310, protein: 14, fibre: 9, tag: 'Salads' },
+      { id: 12, name: 'Chicken Caesar Salad', emoji: '🥬', price: 259, description: 'Grilled chicken over crisp romaine with parmesan and light caesar dressing.', ingredients: 'Grilled chicken breast, romaine lettuce, parmesan, croutons, caesar dressing.', calories: 340, protein: 30, fibre: 4, tag: 'Salads' },
+      { id: 13, name: 'Roasted Beet & Feta Salad', emoji: '🫒', price: 229, description: 'Roasted beets, feta, walnuts, arugula, and a honey balsamic drizzle.', ingredients: 'Beetroot, feta cheese, walnuts, arugula, honey, balsamic vinegar, olive oil.', calories: 290, protein: 11, fibre: 8, tag: 'Salads' },
+      { id: 14, name: 'Mango Oat Smoothie', emoji: '🥭', price: 179, description: 'Sweet mango, rolled oats, yogurt, and honey — a filling breakfast in a cup.', ingredients: 'Mango, rolled oats, yogurt, honey, almond milk.', calories: 240, protein: 12, fibre: 7, tag: 'Smoothies' },
+      { id: 15, name: 'Green Detox Smoothie', emoji: '🥬', price: 189, description: 'Spinach, apple, cucumber, ginger, and lime — a fresh wellness booster.', ingredients: 'Spinach, green apple, cucumber, ginger, lime, chia seeds.', calories: 170, protein: 5, fibre: 6, tag: 'Smoothies' },
+      { id: 16, name: 'Chocolate Peanut Butter Shake', emoji: '🍫', price: 199, description: 'Rich chocolate, peanut butter, banana, and milk — dessert in a glass.', ingredients: 'Cocoa, peanut butter, banana, milk, honey, vanilla.', calories: 420, protein: 16, fibre: 5, tag: 'Smoothies' },
+      { id: 17, name: 'Veggie Spring Rolls', emoji: '🥟', price: 159, description: 'Crispy rolls filled with crunchy vegetables, served with sweet chili dip.', ingredients: 'Spring roll wrappers, cabbage, carrot, bell pepper, sweet chili sauce.', calories: 280, protein: 5, fibre: 4, tag: 'Snacks' },
+      { id: 18, name: 'Loaded Nachos', emoji: '🧀', price: 199, description: 'Corn nachos loaded with cheese, beans, salsa, and a dollop of sour cream.', ingredients: 'Corn chips, cheddar, black beans, salsa, jalapeños, sour cream.', calories: 460, protein: 14, fibre: 8, tag: 'Snacks' },
+      { id: 19, name: 'Masala Oats Khichdi', emoji: '🍲', price: 169, description: 'Comforting oats and moong dal khichdi tempered with ghee and spices.', ingredients: 'Rolled oats, moong dal, ghee, cumin, turmeric, veggies, curry leaves.', calories: 250, protein: 10, fibre: 9, tag: 'Bowls' },
+      { id: 20, name: 'Choco Chip Oat Cookies', emoji: '🍪', price: 99, description: 'Soft-baked oat cookies loaded with dark chocolate chips.', ingredients: 'Oats, whole wheat flour, dark chocolate chips, butter, brown sugar, vanilla.', calories: 180, protein: 4, fibre: 3, tag: 'Desserts' },
+      { id: 21, name: 'Mango Sticky Rice', emoji: '🍮', price: 149, description: 'Sweet coconut sticky rice topped with fresh mango slices.', ingredients: 'Glutinous rice, coconut milk, mango, sugar, sesame seeds.', calories: 320, protein: 5, fibre: 3, tag: 'Desserts' },
+      { id: 22, name: 'Iced Matcha Latte', emoji: '🍵', price: 179, description: 'Ceremonial matcha shaken with milk and ice for a smooth, energizing sip.', ingredients: 'Matcha powder, milk, honey, ice.', calories: 150, protein: 6, fibre: 1, tag: 'Beverages' },
+      { id: 23, name: 'Masala Cold Coffee', emoji: '🧋', price: 149, description: 'Frothy cold coffee with a hint of cardamom, topped with chocolate drizzle.', ingredients: 'Coffee, milk, sugar, cardamom, chocolate syrup, ice.', calories: 190, protein: 5, fibre: 1, tag: 'Beverages' },
+      { id: 24, name: 'Blueberry Almond Overnight Oats', emoji: '🫐', price: 189, description: 'Creamy overnight oats with blueberries, almonds, and a touch of maple.', ingredients: 'Rolled oats, blueberries, almond milk, almonds, maple syrup, chia seeds.', calories: 300, protein: 11, fibre: 8, tag: 'Snacks' },
     ];
 
-    let cart = [], currentMealId = null, isLoggedIn = false;
+    let cart = [], currentMealId = null, isLoggedIn = false, activeCategory = 'All';
     let loggedInUser = { name: 'You', email: 'you@example.com', role: 'worker' };
     const allOrders = [];
     let accounts = [];
@@ -432,12 +465,21 @@
     }
     loadState();
 
+    function filterCategory(cat) {
+      activeCategory = cat;
+      ['All','Bowls','Wraps','Salads','Smoothies','Snacks','Desserts','Beverages'].forEach(c => {
+        const b = document.getElementById('cat-' + c); if (!b) return;
+        if (c === activeCategory) { b.classList.add('bg-fresh-mint'); b.classList.add('text-soft-black'); b.classList.remove('bg-white'); b.classList.remove('border'); b.classList.remove('border-bg-lightgrey'); b.classList.remove('text-gray-600'); }
+        else { b.classList.remove('bg-fresh-mint'); b.classList.remove('text-soft-black'); b.classList.add('bg-white'); b.classList.add('border'); b.classList.add('border-bg-lightgrey'); b.classList.add('text-gray-600'); }
+      });
+      renderHome();
+    }
     function renderHome() {
       if (isLoggedIn && loggedInUser.role !== 'worker') {
         document.getElementById('meal-list').innerHTML = `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">👷</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">Workers Only</h3><p class="text-sm text-gray-500 mb-1">This section is for ordering meals.</p><p class="text-sm text-gray-500 mb-5">Switch to a Worker account to place orders.</p><button class="px-6 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press" onclick="signOut()">Sign Out</button></div>`;
         return;
       }
-      document.getElementById('meal-list').innerHTML = meals.map(m => `
+      document.getElementById('meal-list').innerHTML = meals.filter(m => activeCategory === 'All' || m.tag === activeCategory).map(m => `
         <div class="bg-white rounded-card card-shadow overflow-hidden border border-bg-lightgrey fade-in">
           <div class="h-40 flex items-center justify-center text-5xl relative" style="background: linear-gradient(135deg, #E8F5E9, #F1F8E9);">
             <span>${m.emoji}</span>
