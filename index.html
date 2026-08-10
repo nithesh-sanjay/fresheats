@@ -426,6 +426,7 @@
       24: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Protein_overnight_oats.jpg/500px-Protein_overnight_oats.jpg'
     };
     function mealImg(m) { return (m && m.img) ? m.img : (m && mealImgs[m.id]) ? mealImgs[m.id] : ''; }
+    function mealAvailable(m) { const v = vendorMeals.find(x => x.id === m.id); return v ? v.available !== false : true; }
     function mealThumb(it, cls) {
       const src = mealImg(it); cls = cls || 'w-10 h-10 rounded-btn object-cover';
       return src ? '<img src="' + src + '" alt="' + (it.name || '') + '" class="' + cls + '" loading="lazy" />' : '<span class="text-3xl">' + (it.emoji || '🍽️') + '</span>';
@@ -448,6 +449,7 @@
         localStorage.setItem('fe_streak', JSON.stringify(streakData));
         localStorage.setItem('fe_cart', JSON.stringify(cart));
         localStorage.setItem('fe_suggestions', JSON.stringify(mealSuggestions));
+        localStorage.setItem('fe_vendor', JSON.stringify(vendorMeals.map(v => ({ id: v.id, available: v.available, stock: v.stock }))));
         localStorage.setItem('fe_accounts', JSON.stringify(accounts));
       } catch (e) { }
     }
@@ -467,6 +469,8 @@
         if (c && li === 'true') { const arr = JSON.parse(c); arr.forEach(x => cart.push(x)); }
         const sg = localStorage.getItem('fe_suggestions');
         if (sg) { const arr = JSON.parse(sg); arr.forEach(x => mealSuggestions.push(x)); }
+        const vd = localStorage.getItem('fe_vendor');
+        if (vd) { const arr = JSON.parse(vd); arr.forEach(x => { const v = vendorMeals.find(y => y.id === x.id); if (v) { v.available = x.available; v.stock = x.stock; } }); }
         const ac = localStorage.getItem('fe_accounts');
         if (ac) accounts = JSON.parse(ac);
       } catch (e) { }
@@ -489,11 +493,13 @@
       }
       const fl = meals.filter(m => activeCategory === 'All' || m.tag === activeCategory);
       if (!fl.length) { document.getElementById('meal-list').innerHTML = `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">🥗</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">No meals here</h3><p class="text-sm text-gray-500 mb-5">Try another category.</p><button class="px-6 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press" onclick="filterCategory('All')">View All Meals</button></div>`; return; }
-      document.getElementById('meal-list').innerHTML = fl.map(m => `
-        <div class="bg-white rounded-card card-shadow overflow-hidden border border-bg-lightgrey fade-in">
+      document.getElementById('meal-list').innerHTML = fl.map(m => {
+        const oos = !mealAvailable(m);
+        return `
+        <div class="bg-white rounded-card card-shadow overflow-hidden border border-bg-lightgrey fade-in ${oos ? 'opacity-70' : ''}">
           <div class="h-40 relative overflow-hidden">
-            ${mealImg(m) ? `<img src="${mealImg(m)}" alt="${m.name}" class="w-full h-full object-cover" loading="lazy" />` : `<div class="h-full flex items-center justify-center text-5xl" style="background: linear-gradient(135deg, #E8F5E9, #F1F8E9);"><span>${m.emoji}</span></div>`}
-            <div class="absolute top-2 right-2 bg-fresh-mint text-soft-black text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 shadow-sm"><span>🌿</span> Healthy</div>
+            ${mealImg(m) ? `<img src="${mealImg(m)}" alt="${m.name}" class="w-full h-full object-cover ${oos ? 'grayscale' : ''}" loading="lazy" />` : `<div class="h-full flex items-center justify-center text-5xl" style="background: linear-gradient(135deg, #E8F5E9, #F1F8E9);"><span>${m.emoji}</span></div>`}
+            ${oos ? `<div class="absolute inset-0 bg-soft-black/30 flex items-center justify-center"><span class="bg-soft-black text-white text-xs font-bold px-3 py-1.5 rounded-full">⛔ Out of Stock</span></div>` : `<div class="absolute top-2 right-2 bg-fresh-mint text-soft-black text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 shadow-sm"><span>🌿</span> Healthy</div>`}
           </div>
           <div class="p-4">
             <div class="flex items-start justify-between mb-1">
@@ -506,13 +512,13 @@
               <span class="text-xs bg-bg-offwhite px-2 py-1 rounded-full font-medium flex items-center gap-1">💪 ${m.protein}g</span>
               <span class="text-xs bg-bg-offwhite px-2 py-1 rounded-full font-medium flex items-center gap-1">🌾 ${m.fibre}g</span>
             </div>
-            <div class="flex gap-2">
+            ${oos ? `<div class="w-full py-3 rounded-btn bg-bg-lightgrey text-gray-400 font-bold text-sm text-center">Out of Stock</div>` : `<div class="flex gap-2">
               <button class="flex-1 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm hover:bg-fresh-mint-dark transition-all card-shadow btn-press" onclick="quickAdd(${m.id})">🛒 Add</button>
               <button class="flex-1 py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press" onclick="handleOrderClick(${m.id})">Order Now</button>
-            </div>
+            </div>`}
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
     }
 
     function renderMealDetail(mealId) {
@@ -557,10 +563,10 @@
           </div>
           <span class="text-sm text-gray-500" id="meal-subtotal">₹${m.price}</span>
         </div>
-        <div class="flex gap-2">
+        ${mealAvailable(m) ? `<div class="flex gap-2">
           <button class="flex-1 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm hover:bg-fresh-mint-dark transition-all card-shadow btn-press" onclick="addToCart(${m.id}, false)">🛒 Add to Cart</button>
           <button class="flex-1 py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press" onclick="addToCart(${m.id}, true)">Order Now</button>
-        </div>
+        </div>` : `<div class="w-full py-3 rounded-btn bg-bg-lightgrey text-gray-400 font-bold text-sm text-center">⛔ Out of Stock</div>`}
       `;
     }
     /*<div class="flex items-center gap-4 mb-6">
@@ -584,6 +590,7 @@
     }
     function addToCart(mealId, goToCart) {
       const m = meals.find(x => x.id === mealId); if (!m) return;
+      if (!mealAvailable(m)) { showToast('⛔ ' + m.name + ' is out of stock'); return; }
       const ot = document.querySelector('input[name="order-type"]:checked')?.value || 'pickup';
       const ts = document.querySelector('input[name="time-slot"]:checked')?.value || '12:00 PM';
       const loc = document.getElementById('delivery-location')?.value || loggedInUser.location || '';
@@ -594,6 +601,7 @@
     }
     function quickAdd(mealId) {
       const m = meals.find(x => x.id === mealId); if (!m) return;
+      if (!mealAvailable(m)) { showToast('⛔ ' + m.name + ' is out of stock'); return; }
       const e = cart.find(i => i.id === mealId && i.orderType === 'pickup' && i.timeSlot === '12:00 PM');
       if (e) e.qty += 1; else cart.push({ id: m.id, name: m.name, emoji: m.emoji, img: mealImg(m), price: m.price, qty: 1, orderType: 'pickup', timeSlot: '12:00 PM', location: loggedInUser.location || '' });
       updateCart(); showToast(`🛒 ${m.name} added to cart`);
@@ -619,6 +627,8 @@
     function placeOrder() {
       if (!isLoggedIn) { document.getElementById('login-overlay').classList.remove('hidden'); return; }
       if (!cart.length) return;
+      const oos = cart.find(i => !mealAvailable(i));
+      if (oos) { showToast('⛔ ' + oos.name + ' is out of stock — remove it to continue'); return; }
       const t = cart.reduce((s, i) => s + i.price * i.qty, 0); const g = Math.round(t * 0.05);
       const order = { id: Date.now(), items: [...cart], total: t + g, subtotal: t, gst: g, paymentMethod: document.querySelector('input[name="payment"]:checked')?.value || 'upi', status: 'confirmed', createdAt: new Date(), timeSlot: cart[0].timeSlot, orderType: cart[0].orderType, userId: loggedInUser.email, rating: 0, userName: loggedInUser.name, userEmail: loggedInUser.email };
       allOrders.unshift(order);
@@ -797,7 +807,7 @@
         <h4 class="font-heading font-bold text-soft-black text-sm mb-3 mt-4">📋 Incoming Orders</h4>
         ${io.length ? io.map(o => `<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-2"><div class="flex items-center justify-between mb-2"><span class="text-xs font-medium ${o.status === 'confirmed' ? 'bg-soft-yellow' : 'bg-soft-blue'} px-2 py-0.5 rounded-full capitalize">${o.status}</span></div>${o.items.map(i => `<div class="flex items-center gap-3 mb-1">${mealThumb(i, 'w-9 h-9 rounded-btn object-cover')}<div class="flex-1"><p class="text-sm font-bold text-soft-black">${i.name} ×${i.qty}</p></div></div>`).join('')}<div class="flex items-center justify-between text-xs text-gray-500 mt-2 mb-3"><span>${o.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery'}</span><span>⏰ ${o.timeSlot}</span></div><div class="flex gap-2">${o.status === 'confirmed' ? `<button class="flex-1 py-2 rounded-btn bg-soft-blue text-soft-black text-xs font-bold btn-press shadow-sm" onclick="updateOrderStatus(${o.id},'preparing')">Start Preparing</button>` : ''}${o.status === 'preparing' ? `<button class="flex-1 py-2 rounded-btn bg-fresh-mint text-soft-black text-xs font-bold btn-press shadow-sm" onclick="updateOrderStatus(${o.id},'ready')">Mark Ready</button>` : ''}</div></div>`).join('') : `<div class="text-center py-8 bg-white rounded-card border border-bg-lightgrey"><span class="text-4xl block mb-2">🎉</span><p class="text-sm text-gray-500">No incoming orders</p></div>`}`;
     }
-    function toggleMeal(id) { const m = vendorMeals.find(x => x.id === id); if (m) m.available = !m.available; }
+    function toggleMeal(id) { const m = vendorMeals.find(x => x.id === id); if (m) { m.available = !m.available; saveState(); showToast(m.available ? `✅ ${m.name} is back in stock` : `⛔ ${m.name} marked out of stock`); } }
     function updateOrderStatus(oid, s) {
       const o = allOrders.find(x => x.id === oid); if (!o) return;
       if (s === 'ready' && o.orderType === 'pickup') s = 'completed';
