@@ -167,9 +167,13 @@
         <h2 class="text-xl font-heading font-bold text-soft-black">What sounds good today?</h2>
       </div>
       <div class="relative mb-5"><span
-          class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span><input type="text"
+          class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span><input type="text" id="search-input"
           placeholder="Search meals..."
+          oninput="searchMeals()" onfocus="searchMeals()" onblur="setTimeout(() => { const s = document.getElementById('search-suggestions'); if (s) s.classList.add('hidden'); }, 150)"
+          autocomplete="off"
           class="w-full pl-10 pr-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm font-body focus:outline-none focus:border-fresh-mint transition-all" />
+        <div id="search-suggestions"
+          class="hidden absolute top-full left-0 right-0 mt-1 bg-white rounded-card card-shadow border border-bg-lightgrey overflow-hidden z-40 max-h-72 overflow-y-auto"></div>
       </div>
       <div class="flex gap-2 overflow-x-auto pb-3 mb-3 scrollbar-hide">
         <button id="cat-All"
@@ -477,6 +481,17 @@
     }
     loadState();
 
+    function searchMeals() {
+      const inp = document.getElementById('search-input'); const box = document.getElementById('search-suggestions');
+      const q = (inp.value || '').trim().toLowerCase();
+      if (!q) { box.classList.add('hidden'); box.innerHTML = ''; renderHome(); return; }
+      const matches = meals.filter(m => (m.name || '').toLowerCase().includes(q) || (m.tag || '').toLowerCase().includes(q)).slice(0, 5);
+      box.innerHTML = matches.length ? matches.map(m => `<button class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-bg-offwhite transition-colors text-left" onmousedown="pickSearch(${m.id})">${mealThumb(m, 'w-9 h-9 rounded-btn object-cover')}<div class="flex-1 min-w-0"><p class="text-sm font-bold text-soft-black">${m.name}</p><p class="text-xs text-gray-500">${m.tag}</p></div><span class="text-sm font-bold text-soft-black">₹${m.price}</span></button>`).join('') : `<div class="px-3 py-3 text-sm text-gray-400">No meals match "${inp.value.trim()}"</div>`;
+      box.classList.remove('hidden');
+      renderHome();
+    }
+    function pickSearch(id) { const m = meals.find(x => x.id === id); if (!m) return; document.getElementById('search-input').value = m.name; document.getElementById('search-suggestions').classList.add('hidden'); handleOrderClick(id); }
+
     function filterCategory(cat) {
       activeCategory = cat;
       ['All','Bowls','Wraps','Salads','Smoothies','Snacks'].forEach(c => {
@@ -491,7 +506,8 @@
         document.getElementById('meal-list').innerHTML = `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">👷</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">Workers Only</h3><p class="text-sm text-gray-500 mb-1">This section is for ordering meals.</p><p class="text-sm text-gray-500 mb-5">Switch to a Worker account to place orders.</p><button class="px-6 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press" onclick="signOut()">Sign Out</button></div>`;
         return;
       }
-      const fl = meals.filter(m => activeCategory === 'All' || m.tag === activeCategory);
+      const sq = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
+      const fl = meals.filter(m => (activeCategory === 'All' || m.tag === activeCategory) && (!sq || (m.name || '').toLowerCase().includes(sq)));
       if (!fl.length) { document.getElementById('meal-list').innerHTML = `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">🥗</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">No meals here</h3><p class="text-sm text-gray-500 mb-5">Try another category.</p><button class="px-6 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press" onclick="filterCategory('All')">View All Meals</button></div>`; return; }
       document.getElementById('meal-list').innerHTML = fl.map(m => {
         const oos = !mealAvailable(m);
