@@ -216,6 +216,11 @@
       <div id="tracking-content"></div>
     </div>
 
+    <!-- ORDER SUMMARY -->
+    <div id="screen-summary" class="screen px-4 pt-4">
+      <div id="summary-content"></div>
+    </div>
+
     <!-- ORDERS -->
     <div id="screen-orders" class="screen px-4 pt-4">
       <h2 class="text-xl font-heading font-bold text-soft-black mb-3">Orders</h2>
@@ -514,11 +519,36 @@
       if (!isLoggedIn) { document.getElementById('login-overlay').classList.remove('hidden'); return; }
       if (!cart.length) return;
       const t = cart.reduce((s, i) => s + i.price * i.qty, 0); const g = Math.round(t * 0.05);
-      const order = { id: Date.now(), items: [...cart], total: t + g, paymentMethod: document.querySelector('input[name="payment"]:checked')?.value || 'upi', status: 'confirmed', createdAt: new Date(), timeSlot: cart[0].timeSlot, orderType: cart[0].orderType, userId: loggedInUser.email, rating: 0, userName: loggedInUser.name, userEmail: loggedInUser.email };
+      const order = { id: Date.now(), items: [...cart], total: t + g, subtotal: t, gst: g, paymentMethod: document.querySelector('input[name="payment"]:checked')?.value || 'upi', status: 'confirmed', createdAt: new Date(), timeSlot: cart[0].timeSlot, orderType: cart[0].orderType, userId: loggedInUser.email, rating: 0, userName: loggedInUser.name, userEmail: loggedInUser.email };
       allOrders.unshift(order);
       streakData.currentStreak += 1; if (streakData.currentStreak > streakData.longestStreak) streakData.longestStreak = streakData.currentStreak;
       streakData.points += 10; const d = new Date().getDay(); streakData.weekLog[d === 0 ? 6 : d - 1] = true;
-      cart = []; saveState(); updateCart(); showTracking(order.id);
+      cart = []; saveState(); updateCart(); showOrderSummary(order.id);
+    }
+
+    function showOrderSummary(orderId) {
+      const o = allOrders.find(x => x.id === orderId); if (!o) return;
+      document.getElementById('summary-content').innerHTML = `
+        <div class="text-center mb-6 fade-in pt-2"><span class="text-5xl block mb-3">✅</span><h2 class="text-xl font-heading font-bold text-soft-black">Order Confirmed!</h2><p class="text-sm text-gray-500">Order #${String(o.id).slice(-6)}</p></div>
+        <div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-4">
+          <h4 class="font-heading font-bold text-soft-black text-sm mb-3">🧾 Order Summary</h4>
+          ${o.items.map(i => `<div class="flex items-center justify-between mb-2"><span class="flex items-center gap-2 text-sm text-soft-black"><span class="text-xl">${i.emoji}</span> ${i.name} ×${i.qty}</span><span class="text-sm font-medium text-soft-black">₹${i.price * i.qty}</span></div>`).join('')}
+          <div class="border-t border-bg-lightgrey mt-3 pt-3 space-y-1">
+            <div class="flex justify-between text-sm text-gray-500"><span>Subtotal</span><span>₹${o.subtotal !== undefined ? o.subtotal : o.total - o.gst}</span></div>
+            <div class="flex justify-between text-sm text-gray-500"><span>GST (5%)</span><span>₹${o.gst !== undefined ? o.gst : Math.round(o.total * 0.05)}</span></div>
+            <div class="flex justify-between font-heading font-bold text-soft-black pt-1 border-t border-bg-lightgrey"><span>Total</span><span class="text-fresh-green">₹${o.total}</span></div>
+          </div>
+        </div>
+        <div class="bg-bg-offwhite rounded-card p-4 mb-4">
+          <div class="flex items-center justify-between mb-2 text-sm"><span class="text-gray-500">Pickup / Delivery</span><span class="font-medium text-soft-black">${o.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery'}</span></div>
+          <div class="flex items-center justify-between mb-2 text-sm"><span class="text-gray-500">Time slot</span><span class="font-medium text-soft-black">⏰ ${o.timeSlot}</span></div>
+          <div class="flex items-center justify-between text-sm"><span class="text-gray-500">Payment</span><span class="font-medium text-soft-black">💳 ${o.paymentMethod === 'upi' ? 'UPI' : o.paymentMethod === 'card' ? 'Card' : 'Lunch Card'}</span></div>
+        </div>
+        <div class="flex gap-2">
+          <button class="flex-1 py-3 rounded-btn bg-fresh-green text-white font-bold text-sm btn-press shadow-sm" onclick="showTracking(${o.id})">Track Order</button>
+          <button class="flex-1 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press shadow-sm" onclick="showScreen('home')">Back to Menu</button>
+        </div>`;
+      showScreen('summary');
     }
 
     function showTracking(orderId) {
