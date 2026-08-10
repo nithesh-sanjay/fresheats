@@ -600,7 +600,16 @@
       const c = document.getElementById('profile-content');
       if (!isLoggedIn) { c.innerHTML = `<div class="text-center py-16 fade-in"><span class="text-6xl block mb-4">👤</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">Not signed in</h3><p class="text-sm text-gray-500 mb-5">Sign in to manage your profile</p><button class="px-8 py-3 rounded-btn bg-soft-black text-white font-bold text-sm btn-press" onclick="document.getElementById('login-overlay').classList.remove('hidden')">Sign In</button></div>`; return; }
       c.innerHTML = `
-        <div class="text-center mb-6 pt-4 fade-in"><div class="w-20 h-20 rounded-full bg-gradient-to-br from-bg-green-tint to-fresh-mint flex items-center justify-center text-4xl mx-auto mb-3 shadow-md">👤</div><h2 class="text-xl font-heading font-bold text-soft-black">${loggedInUser.name}</h2><p class="text-sm text-gray-500">${loggedInUser.email}</p></div>
+        <div class="text-center mb-6 pt-4 fade-in"><div class="w-20 h-20 rounded-full bg-gradient-to-br from-bg-green-tint to-fresh-mint flex items-center justify-center text-4xl mx-auto mb-3 shadow-md">👤</div><h2 class="text-xl font-heading font-bold text-soft-black">${loggedInUser.name}</h2><p class="text-sm text-gray-500">${loggedInUser.email}</p><button class="mt-3 px-4 py-2 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="editProfile()">✏️ Edit Profile</button></div>
+        <div id="edit-profile-form" class="hidden mb-4">
+          <div class="bg-white rounded-card p-4 border border-bg-lightgrey shadow-sm">
+            <h4 class="font-heading font-bold text-soft-black text-sm mb-3">✏️ Edit Details</h4>
+            <div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Full Name</label><input type="text" id="edit-name" value="${loggedInUser.name}" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div>
+            <div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Phone Number</label><input type="tel" id="edit-phone" value="${loggedInUser.phone || '+91 98765 43210'}" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div>
+            <div class="mb-4"><label class="text-xs font-bold text-gray-500 mb-1 block">Location</label><input type="text" id="edit-location" value="${loggedInUser.location || 'Tech Park, Floor 4'}" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div>
+            <div class="flex gap-2"><button class="flex-1 py-3 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="saveProfile()">Save</button><button class="flex-1 py-3 rounded-btn bg-bg-lightgrey text-gray-600 text-xs font-bold btn-press" onclick="renderProfile()">Cancel</button></div>
+          </div>
+        </div>
         <div class="space-y-2 mb-4">
           <div class="flex items-center justify-between bg-bg-offwhite rounded-btn p-3"><span class="text-sm font-medium text-soft-black">📱 Phone</span><span class="text-sm text-gray-500">${loggedInUser.phone || '+91 98765 43210'}</span></div>
           <div class="flex items-center justify-between bg-bg-offwhite rounded-btn p-3"><span class="text-sm font-medium text-soft-black">🏢 IT Park</span><span class="text-sm text-gray-500">${loggedInUser.location || 'Tech Park, Floor 4'}</span></div>
@@ -614,6 +623,19 @@
         </div>
         <div class="border-t border-bg-lightgrey pt-4 mb-4"><p class="text-xs text-gray-400 mb-2 font-medium">Logged in as: <span class="font-bold text-soft-black capitalize">${loggedInUser.role}</span></p><p class="text-xs text-gray-400">Sign out to switch to a different role.</p></div>
         <button class="w-full py-3 rounded-btn border border-soft-coral text-soft-coral font-bold text-sm hover:bg-soft-coral hover:text-white transition-all btn-press" onclick="signOut()">Sign Out</button>`;
+    }
+    function editProfile() {
+      document.getElementById('edit-profile-form')?.classList.remove('hidden');
+    }
+    function saveProfile() {
+      const n = document.getElementById('edit-name')?.value.trim(); const p = document.getElementById('edit-phone')?.value.trim(); const l = document.getElementById('edit-location')?.value.trim();
+      if (!n) { alert('Please enter your name'); return; }
+      if (!p) { alert('Please enter your phone number'); return; }
+      if (!l) { alert('Please enter your location'); return; }
+      loggedInUser.name = n; loggedInUser.phone = p; loggedInUser.location = l;
+      const acc = accounts.find(a => a.email.toLowerCase() === loggedInUser.email.toLowerCase());
+      if (acc) { acc.name = n; acc.phone = p; acc.location = l; }
+      saveState(); renderProfile(); updateCart();
     }
 
     function submitSuggestion() {
