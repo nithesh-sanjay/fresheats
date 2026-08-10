@@ -692,14 +692,24 @@
     }
     function renderOrders() {
       const c = document.getElementById('orders-content');
-      const mine = allOrders.filter(o => o.userEmail === loggedInUser.email);
+      const role = loggedInUser.role;
+      const mine = role === 'worker' ? allOrders.filter(o => o.userEmail === loggedInUser.email)
+        : role === 'vendor' ? allOrders.filter(o => o.preparedByEmail === loggedInUser.email)
+        : role === 'delivery' ? allOrders.filter(o => o.deliveredByEmail === loggedInUser.email)
+        : allOrders;
       const activeOrders = mine.filter(o => ['confirmed', 'preparing', 'ready', 'out_for_delivery'].includes(o.status));
       const historyOrders = mine.filter(o => ['completed', 'cancelled', 'missed'].includes(o.status));
       const list = orderTab === 'active' ? activeOrders : historyOrders;
       if (!list.length) {
         c.innerHTML = orderTab === 'active'
-          ? `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">🟢</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">No active orders</h3><p class="text-sm text-gray-500 mb-5">Place an order and it'll show up here!</p><button class="px-8 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press" onclick="showScreen('home')">Browse Menu</button></div>`
-          : `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">📋</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">No history yet</h3><p class="text-sm text-gray-500 mb-5">Completed orders will appear here.</p></div>`;
+          ? (role === 'worker'
+            ? `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">🟢</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">No active orders</h3><p class="text-sm text-gray-500 mb-5">Place an order and it'll show up here!</p><button class="px-8 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press" onclick="showScreen('home')">Browse Menu</button></div>`
+            : role === 'vendor'
+              ? `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">🍳</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">No active orders</h3><p class="text-sm text-gray-500 mb-5">Orders you're preparing will show here.</p></div>`
+              : role === 'delivery'
+                ? `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">🚚</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">No active deliveries</h3><p class="text-sm text-gray-500 mb-5">Deliveries you've accepted will show here.</p></div>`
+                : `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">📊</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">No active orders</h3><p class="text-sm text-gray-500 mb-5">All in-progress orders will show here.</p></div>`)
+          : `<div class="text-center py-16 fade-in"><span class="text-5xl block mb-4">📋</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">No history yet</h3><p class="text-sm text-gray-500 mb-5">Completed work will appear here.</p></div>`;
         return;
       }
       var deleteBtn = orderTab === 'history' ? '<button class="text-xs text-soft-coral font-medium btn-press" onclick="deleteAllHistory()">Delete all</button>' : '<span></span>';
@@ -812,7 +822,7 @@
     function updateOrderStatus(oid, s) {
       const o = allOrders.find(x => x.id === oid); if (!o) return;
       if (s === 'ready' && o.orderType === 'pickup') s = 'completed';
-      o.status = s; if (s === 'preparing') o.preparedBy = loggedInUser.name; if (s === 'ready') { o.preparedBy = loggedInUser.name; o.readyAt = new Date(); } saveState(); renderVendor();
+      o.status = s; if (s === 'preparing') { o.preparedBy = loggedInUser.name; o.preparedByEmail = loggedInUser.email; } if (s === 'ready') { o.preparedBy = loggedInUser.name; o.preparedByEmail = loggedInUser.email; o.readyAt = new Date(); } saveState(); renderVendor();
     }
     function addSuggestionToMenu(sid) { const s = mealSuggestions.find(x => x.id === sid); if (!s) return; const newId = Math.max(...meals.map(m => m.id), 0) + 1; const newMeal = { id: newId, name: s.name, emoji: '🍽️', price: 199, description: s.desc, ingredients: s.desc, calories: 300, protein: 15, fibre: 8, tag: 'Suggested' }; meals.push(newMeal); vendorMeals.push({ ...newMeal, available: true, stock: 10 }); s.status = 'added'; saveState(); renderVendor(); }
     function ignoreSuggestion(sid) { const s = mealSuggestions.find(x => x.id === sid); if (!s) return; s.status = 'ignored'; saveState(); renderVendor(); }
@@ -839,7 +849,7 @@
         ${av.length ? `<h4 class="font-heading font-bold text-soft-black text-sm mb-3">📦 Available Deliveries</h4>${av.map(o => `<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-2">${o.items.map(i => `<div class="flex items-center gap-3 mb-1">${mealThumb(i, 'w-9 h-9 rounded-btn object-cover')}<div class="flex-1"><p class="text-sm font-bold text-soft-black">${i.name} ×${i.qty}</p></div></div>`).join('')}<div class="text-xs text-gray-500 mb-1">📍 ${o.items[0]?.location || 'No location specified'}</div><div class="text-xs text-gray-500 mb-3">⏰ ${o.timeSlot}</div><button class="w-full py-2 rounded-btn bg-fresh-mint text-soft-black text-xs font-bold btn-press shadow-sm" onclick="acceptDelivery(${o.id})">Accept Delivery</button></div>`).join('')}` : `<div class="text-center py-8 bg-white rounded-card border border-bg-lightgrey mb-4"><span class="text-4xl block mb-2">🚚</span><p class="text-sm text-gray-500">No deliveries available</p></div>`}
         ${md.length ? `<h4 class="font-heading font-bold text-soft-black text-sm mb-3 mt-4">📋 My Deliveries</h4>${md.map(o => `<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-2">${o.items.map(i => `<div class="flex items-center gap-3 mb-1">${mealThumb(i, 'w-9 h-9 rounded-btn object-cover')}<div class="flex-1"><p class="text-sm font-bold text-soft-black">${i.name} ×${i.qty}</p></div></div>`).join('')}<div class="text-xs text-gray-500 mb-1">📍 ${o.items[0]?.location || 'No location specified'}</div><div class="text-xs text-gray-500 mb-3">⏰ ${o.timeSlot}</div><button class="w-full py-2 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="completeDelivery(${o.id})">Mark Delivered ✅</button></div>`).join('')}` : ''}`;
     }
-    function acceptDelivery(oid) { const o = allOrders.find(x => x.id === oid); if (o) { o.deliveryAssigned = true; o.deliveredBy = loggedInUser.name; o.status = 'out_for_delivery'; saveState(); renderDelivery(); } }
+    function acceptDelivery(oid) { const o = allOrders.find(x => x.id === oid); if (o) { o.deliveryAssigned = true; o.deliveredBy = loggedInUser.name; o.deliveredByEmail = loggedInUser.email; o.status = 'out_for_delivery'; saveState(); renderDelivery(); } }
     function completeDelivery(oid) { const o = allOrders.find(x => x.id === oid); if (o) { o.status = 'completed'; o.deliveredAt = new Date(); saveState(); renderDelivery(); } }
 
     // ========== ADMIN ==========
@@ -855,7 +865,7 @@
         ${pendSugs.length ? pendSugs.map(s => `<div class="bg-white rounded-card p-4 mb-2 border border-soft-yellow shadow-sm"><div class="flex items-start justify-between mb-1"><h4 class="font-heading font-bold text-soft-black text-sm">${s.name}</h4><span class="text-xs bg-soft-yellow px-2 py-0.5 rounded-full">Pending</span></div><p class="text-xs text-gray-500 mb-1">${s.desc}</p><p class="text-xs text-gray-400 mb-2">💚 ${s.why} · by ${s.user}</p><button class="px-4 py-1.5 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="approveSuggestion(${s.id})">✅ Approve & Send to Vendor</button></div>`).join('') : `<div class="text-center py-6 bg-white rounded-card border border-bg-lightgrey"><span class="text-2xl block mb-1">💡</span><p class="text-sm text-gray-500">No pending suggestions</p></div>`}
       `;
     }
-    function adminUpdateStatus(oid, s) { const o = allOrders.find(x => x.id === oid); if (o) { o.status = s; saveState(); renderAdmin(); } }
+    function adminUpdateStatus(oid, s) { const o = allOrders.find(x => x.id === oid); if (o) { o.status = s; if (s === 'preparing' || s === 'ready') { o.preparedBy = loggedInUser.name; o.preparedByEmail = loggedInUser.email; if (s === 'ready') o.readyAt = new Date(); } saveState(); renderAdmin(); } }
     function approveSuggestion(sid) { const s = mealSuggestions.find(x => x.id === sid); if (s) { s.status = 'approved'; saveState(); renderAdmin(); } }
 
     // ========== AUTH ==========
