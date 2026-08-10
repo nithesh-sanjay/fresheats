@@ -154,7 +154,7 @@
       </div>
       <div class="flex items-center gap-2">
         <span id="role-badge" class="text-[10px] bg-soft-yellow px-2 py-0.5 rounded-full font-medium hidden"></span>
-        <button class="relative btn-press" aria-label="Cart" onclick="showScreen('cart')"><span
+        <button id="cart-btn" class="relative btn-press" aria-label="Cart" onclick="showScreen('cart')"><span
             class="text-xl">🛒</span><span id="cart-badge"
             class="absolute -top-1 -right-1 bg-fresh-green text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span></button>
       </div>
@@ -754,6 +754,7 @@
     function switchRole(role) {
       loggedInUser.role = role; const b = document.getElementById('role-badge');
       document.getElementById('nav-streaks-btn').classList.toggle('hidden', role !== 'worker' && role !== 'delivery');
+      document.getElementById('cart-btn').classList.toggle('hidden', role !== 'worker');
       if (role === 'worker') { b.classList.add('hidden'); showScreen('home'); return; }
       b.classList.remove('hidden'); b.textContent = role.charAt(0).toUpperCase() + role.slice(1); showScreen(role);
     }
