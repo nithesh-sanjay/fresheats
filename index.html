@@ -317,6 +317,10 @@
           class="text-xl">👤</span><span class="text-[10px] font-medium">Profile</span></button>
     </div>
 
+    <div id="toast"
+      class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-soft-black text-white text-sm font-medium px-5 py-3 rounded-btn shadow-lg opacity-0 pointer-events-none transition-all duration-300 max-w-[90vw] text-center"
+      style="transform: translate(-50%, -20px);"></div>
+
   </div>
 
   <!-- LOGIN OVERLAY -->
@@ -423,7 +427,10 @@
               <span class="text-xs bg-bg-offwhite px-2 py-1 rounded-full font-medium flex items-center gap-1">💪 ${m.protein}g</span>
               <span class="text-xs bg-bg-offwhite px-2 py-1 rounded-full font-medium flex items-center gap-1">🌾 ${m.fibre}g</span>
             </div>
-            <button class="w-full py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm hover:bg-fresh-mint-dark transition-all card-shadow hover:shadow-lg btn-press" onclick="handleOrderClick(${m.id})">Order Now</button>
+            <div class="flex gap-2">
+              <button class="flex-1 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm hover:bg-fresh-mint-dark transition-all card-shadow btn-press" onclick="quickAdd(${m.id})">🛒 Add</button>
+              <button class="flex-1 py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press" onclick="handleOrderClick(${m.id})">Order Now</button>
+            </div>
           </div>
         </div>
       `).join('');
@@ -471,7 +478,10 @@
           </div>
           <span class="text-sm text-gray-500" id="meal-subtotal">₹${m.price}</span>
         </div>
-        <button class="w-full py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press" onclick="addToCart(${m.id})">Add to Cart — <span id="cart-total-text">₹${m.price}</span></button>
+        <div class="flex gap-2">
+          <button class="flex-1 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm hover:bg-fresh-mint-dark transition-all card-shadow btn-press" onclick="addToCart(${m.id}, false)">🛒 Add to Cart</button>
+          <button class="flex-1 py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press" onclick="addToCart(${m.id}, true)">Order Now</button>
+        </div>
       `;
     }
     /*<div class="flex items-center gap-4 mb-6">
@@ -487,20 +497,32 @@
 }*/
 
     let mealQty = 1;
-    function changeQty(d) { const m = meals.find(x => x.id === currentMealId); if (!m) return; mealQty = Math.max(1, mealQty + d); document.getElementById('meal-qty').textContent = mealQty; document.getElementById('meal-subtotal').textContent = '₹' + (m.price * mealQty); document.getElementById('cart-total-text').textContent = '₹' + (m.price * mealQty); }
+    function changeQty(d) { const m = meals.find(x => x.id === currentMealId); if (!m) return; mealQty = Math.max(1, mealQty + d); document.getElementById('meal-qty').textContent = mealQty; document.getElementById('meal-subtotal').textContent = '₹' + (m.price * mealQty); }
     function toggleLocationField() {
       const f = document.getElementById('location-field'); if (!f) return;
       const d = document.querySelector('input[name="order-type"]:checked')?.value;
       f.classList.toggle('hidden', d !== 'delivery');
     }
-    function addToCart(mealId) {
+    function addToCart(mealId, goToCart) {
       const m = meals.find(x => x.id === mealId); if (!m) return;
       const ot = document.querySelector('input[name="order-type"]:checked')?.value || 'pickup';
       const ts = document.querySelector('input[name="time-slot"]:checked')?.value || '12:00 PM';
       const loc = document.getElementById('delivery-location')?.value || loggedInUser.location || '';
       const e = cart.find(i => i.id === mealId && i.orderType === ot && i.timeSlot === ts);
       if (e) e.qty += mealQty; else cart.push({ id: m.id, name: m.name, emoji: m.emoji, price: m.price, qty: mealQty, orderType: ot, timeSlot: ts, location: loc });
-      mealQty = 1; updateCart(); showScreen('cart');
+      mealQty = 1; updateCart(); showToast(`🛒 ${m.name} added to cart`);
+      if (goToCart !== false) showScreen('cart');
+    }
+    function quickAdd(mealId) {
+      const m = meals.find(x => x.id === mealId); if (!m) return;
+      const e = cart.find(i => i.id === mealId && i.orderType === 'pickup' && i.timeSlot === '12:00 PM');
+      if (e) e.qty += 1; else cart.push({ id: m.id, name: m.name, emoji: m.emoji, price: m.price, qty: 1, orderType: 'pickup', timeSlot: '12:00 PM', location: loggedInUser.location || '' });
+      updateCart(); showToast(`🛒 ${m.name} added to cart`);
+    }
+    function showToast(msg) {
+      const t = document.getElementById('toast'); if (!t) return;
+      t.textContent = msg; t.style.opacity = '1'; t.style.transform = 'translate(-50%, 0)';
+      clearTimeout(t._timer); t._timer = setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%, -20px)'; }, 1800);
     }
     function updateCart() {
       const b = document.getElementById('cart-badge'); const t = cart.reduce((s, i) => s + i.qty, 0);
