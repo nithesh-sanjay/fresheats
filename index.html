@@ -304,6 +304,31 @@
       <div id="admin-content"></div>
     </div>
 
+    <!-- ADD MEAL -->
+    <div id="screen-addmeal" class="screen px-4 pt-4">
+      <button class="flex items-center gap-1 text-sm text-gray-500 mb-4 hover:text-soft-black transition-colors btn-press"
+        onclick="showScreen('vendor')">← Back</button>
+      <div class="text-center mb-4 fade-in"><span class="text-4xl block mb-2">🍽️</span>
+        <h2 class="text-xl font-heading font-bold text-soft-black">Introduce a Meal</h2>
+        <p class="text-sm text-gray-500">Add a new meal to your menu</p>
+      </div>
+      <div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4">
+        <div class="mb-3"><h4 class="font-heading font-bold text-soft-black text-sm mb-2">Meal Name *</h4><input type="text" id="new-meal-name" placeholder="e.g. Paneer Tikka Wrap" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all" /></div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div><h4 class="font-heading font-bold text-soft-black text-sm mb-2">Emoji</h4><input type="text" id="new-meal-emoji" placeholder="e.g. 🥙" maxlength="4" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all" /></div>
+          <div><h4 class="font-heading font-bold text-soft-black text-sm mb-2">Price (₹) *</h4><input type="number" id="new-meal-price" placeholder="e.g. 199" min="1" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all" /></div>
+        </div>
+        <div class="mb-3"><h4 class="font-heading font-bold text-soft-black text-sm mb-2">Description *</h4><textarea id="new-meal-desc" rows="2" placeholder="What's in this meal?" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all"></textarea></div>
+        <div class="grid grid-cols-3 gap-3 mb-3">
+          <div><h4 class="font-heading font-bold text-soft-black text-sm mb-2">🔥 Calories</h4><input type="number" id="new-meal-cal" placeholder="300" min="0" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all" /></div>
+          <div><h4 class="font-heading font-bold text-soft-black text-sm mb-2">💪 Protein</h4><input type="number" id="new-meal-protein" placeholder="15" min="0" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all" /></div>
+          <div><h4 class="font-heading font-bold text-soft-black text-sm mb-2">🌾 Fibre</h4><input type="number" id="new-meal-fibre" placeholder="8" min="0" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all" /></div>
+        </div>
+        <div class="mb-4"><h4 class="font-heading font-bold text-soft-black text-sm mb-2">Category</h4><select id="new-meal-tag" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all"><option>Bowls</option><option>Wraps</option><option>Salads</option><option>Smoothies</option><option>Snacks</option><option>Desserts</option><option>Beverages</option></select></div>
+        <button class="w-full py-3 rounded-btn bg-fresh-green text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press" onclick="saveNewMeal()">➕ Add Meal to Menu</button>
+      </div>
+    </div>
+
     <!-- BOTTOM NAV -->
     <div id="bottom-nav"
       class="fixed bottom-0 left-1/2 -translate-x-1/2 max-w-lg w-full bg-white/90 backdrop-blur-md border-t border-bg-lightgrey px-4 py-2 flex items-center justify-around z-30">
@@ -313,6 +338,8 @@
           class="text-xl">📋</span><span class="text-[10px] font-medium">History</span></button>
       <button id="nav-streaks-btn" class="flex flex-col items-center gap-0.5 nav-streaks btn-press" onclick="showScreen('streaks')"><span
           class="text-xl">⭐</span><span class="text-[10px] font-medium">Streaks</span></button>
+      <button id="nav-addmeal-btn" class="hidden flex flex-col items-center gap-0.5 nav-addmeal btn-press" onclick="showScreen('addmeal')"><span
+          class="text-xl">🍽️</span><span class="text-[10px] font-medium">Add Meal</span></button>
       <button class="flex flex-col items-center gap-0.5 nav-profile btn-press" onclick="showScreen('profile')"><span
           class="text-xl">👤</span><span class="text-[10px] font-medium">Profile</span></button>
     </div>
@@ -710,6 +737,7 @@
       const pendSugs = mealSuggestions.filter(s => s.status === 'pending');
       c.innerHTML = `
         <div class="grid grid-cols-3 gap-2 mb-4"><div class="bg-gradient-to-br from-bg-green-tint to-fresh-mint/30 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-fresh-green">${vendorMeals.length}</span><p class="text-[10px] text-gray-600">Meals</p></div><div class="bg-gradient-to-br from-soft-yellow/30 to-soft-yellow/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${io.length}</span><p class="text-[10px] text-gray-600">Pending</p></div><div class="bg-gradient-to-br from-soft-blue/30 to-soft-blue/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${allOrders.length}</span><p class="text-[10px] text-gray-600">Total</p></div></div>
+        <button class="w-full py-3 rounded-btn bg-fresh-green text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press mb-4" onclick="showScreen('addmeal')">➕ Introduce a Meal</button>
         <h4 class="font-heading font-bold text-soft-black text-sm mb-3">🍳 Your Meals</h4>
         ${vendorMeals.map(m => `<div class="flex items-center gap-3 bg-bg-offwhite rounded-card p-3 mb-2"><span class="text-2xl">${m.emoji}</span><div class="flex-1 min-w-0"><p class="text-sm font-bold text-soft-black">${m.name}</p><p class="text-xs text-gray-500">₹${m.price} · Stock: ${m.stock}</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" ${m.available ? 'checked' : ''} onchange="toggleMeal(${m.id})" class="sr-only peer" /><div class="w-9 h-5 bg-bg-lightgrey rounded-full peer peer-checked:bg-fresh-green after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full shadow-sm"></div></label></div>`).join('')}
         ${appSugs.length ? `<h4 class="font-heading font-bold text-soft-black text-sm mb-3 mt-4">✅ Approved Suggestions</h4>${appSugs.map(s => `<div class="bg-white rounded-card p-3 mb-2 border border-fresh-mint shadow-sm flex items-center gap-3"><span class="text-2xl">🍽️</span><div class="flex-1 min-w-0"><p class="text-sm font-bold text-soft-black">${s.name}</p><p class="text-xs text-gray-500">${s.desc}</p></div><button class="px-3 py-1.5 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm whitespace-nowrap" onclick="addSuggestionToMenu(${s.id})">+ Add</button></div>`).join('')}` : ''}
@@ -725,6 +753,18 @@
     }
     function addSuggestionToMenu(sid) { const s = mealSuggestions.find(x => x.id === sid); if (!s) return; const newId = Math.max(...meals.map(m => m.id), 0) + 1; const newMeal = { id: newId, name: s.name, emoji: '🍽️', price: 199, description: s.desc, ingredients: s.desc, calories: 300, protein: 15, fibre: 8, tag: 'Suggested' }; meals.push(newMeal); vendorMeals.push({ ...newMeal, available: true, stock: 10 }); s.status = 'added'; saveState(); renderVendor(); }
     function ignoreSuggestion(sid) { const s = mealSuggestions.find(x => x.id === sid); if (!s) return; s.status = 'ignored'; saveState(); renderVendor(); }
+    function saveNewMeal() {
+      const name = document.getElementById('new-meal-name').value.trim();
+      const price = parseInt(document.getElementById('new-meal-price').value, 10);
+      const emoji = document.getElementById('new-meal-emoji').value.trim() || '🍽️';
+      const desc = document.getElementById('new-meal-desc').value.trim();
+      if (!name || !price || price <= 0) { showToast('⚠️ Please enter a meal name and a valid price'); return; }
+      const newId = Math.max(...meals.map(m => m.id), 0) + 1;
+      const newMeal = { id: newId, name, emoji, price, description: desc, ingredients: desc || name, calories: parseInt(document.getElementById('new-meal-cal').value, 10) || 300, protein: parseInt(document.getElementById('new-meal-protein').value, 10) || 15, fibre: parseInt(document.getElementById('new-meal-fibre').value, 10) || 8, tag: document.getElementById('new-meal-tag').value };
+      meals.push(newMeal); vendorMeals.push({ ...newMeal, available: true, stock: 10 });
+      document.getElementById('new-meal-name').value = ''; document.getElementById('new-meal-price').value = ''; document.getElementById('new-meal-emoji').value = ''; document.getElementById('new-meal-desc').value = ''; document.getElementById('new-meal-cal').value = ''; document.getElementById('new-meal-protein').value = ''; document.getElementById('new-meal-fibre').value = '';
+      saveState(); showToast(`✅ "${name}" added to the menu`); showScreen('vendor');
+    }
 
     // ========== DELIVERY ==========
     function renderDelivery() {
@@ -806,6 +846,7 @@
     function switchRole(role) {
       loggedInUser.role = role; const b = document.getElementById('role-badge');
       document.getElementById('nav-streaks-btn').classList.toggle('hidden', role !== 'worker' && role !== 'delivery');
+      document.getElementById('nav-addmeal-btn').classList.toggle('hidden', role !== 'vendor');
       document.getElementById('cart-btn').classList.toggle('hidden', role !== 'worker');
       if (role === 'worker') { b.classList.add('hidden'); showScreen('home'); return; }
       b.classList.remove('hidden'); b.textContent = role.charAt(0).toUpperCase() + role.slice(1); showScreen(role);
