@@ -794,78 +794,120 @@
       return { cal, protein, fibre, carbs: Math.round(cal * 0.55 / 4), fats: Math.round(cal * 0.25 / 9), sugar: 30 };
     }
     function todayKey(d) { const x = d || new Date(); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
-    function consumedToday() {
-      const t = { cal: 0, protein: 0, fibre: 0, carbs: 0, fats: 0, sugar: 0 }; const tk = todayKey();
-      allOrders.forEach(o => {
-        if (o.userEmail !== loggedInUser.email) return;
-        if (!o.createdAt || todayKey(new Date(o.createdAt)) !== tk) return;
-        if (o.status === 'cancelled' || o.status === 'missed') return;
-        (o.items || []).forEach(i => { const m = meals.find(x => x.id === i.id); if (m) { const n = mealNuts(m); const q = i.qty || 1; NUTRIENT_META.forEach(mm => t[mm.key] += n[mm.key] * q); } });
-      });
+    const FOODS = [
+      { name: 'Boiled Egg', serving: '1 egg', cal: 78, protein: 6, fibre: 0, carbs: 1, fats: 5, sugar: 1 },
+      { name: 'Banana', serving: '1 medium', cal: 105, protein: 1, fibre: 3, carbs: 27, fats: 0, sugar: 14 },
+      { name: 'Curd (Dahi)', serving: '1 cup', cal: 60, protein: 3, fibre: 0, carbs: 4, fats: 3, sugar: 4 },
+      { name: 'Roti / Chapati', serving: '1 roti', cal: 120, protein: 3, fibre: 2, carbs: 20, fats: 3, sugar: 0 },
+      { name: 'Rice (cooked)', serving: '1 bowl', cal: 200, protein: 4, fibre: 1, carbs: 45, fats: 0, sugar: 0 },
+      { name: 'Dal', serving: '1 bowl', cal: 180, protein: 12, fibre: 8, carbs: 27, fats: 3, sugar: 1 },
+      { name: 'Chicken Curry', serving: '1 bowl', cal: 250, protein: 25, fibre: 1, carbs: 10, fats: 12, sugar: 2 },
+      { name: 'Paneer Bhurji', serving: '1 bowl', cal: 250, protein: 14, fibre: 1, carbs: 6, fats: 20, sugar: 2 },
+      { name: 'Samosa', serving: '1 pc', cal: 260, protein: 4, fibre: 2, carbs: 30, fats: 14, sugar: 1 },
+      { name: 'Masala Dosa', serving: '1 dosa', cal: 230, protein: 5, fibre: 3, carbs: 34, fats: 8, sugar: 2 },
+      { name: 'Idli', serving: '2 pcs', cal: 120, protein: 4, fibre: 2, carbs: 24, fats: 0, sugar: 0 },
+      { name: 'Oats Bowl', serving: '1 cup', cal: 300, protein: 10, fibre: 8, carbs: 54, fats: 5, sugar: 1 },
+      { name: 'Milk', serving: '1 glass', cal: 120, protein: 8, fibre: 0, carbs: 12, fats: 5, sugar: 12 },
+      { name: 'Apple', serving: '1 medium', cal: 95, protein: 0, fibre: 4, carbs: 25, fats: 0, sugar: 19 },
+      { name: 'Green Salad', serving: '1 plate', cal: 80, protein: 3, fibre: 4, carbs: 12, fats: 4, sugar: 4 },
+      { name: 'Protein Smoothie', serving: '1 glass', cal: 220, protein: 18, fibre: 5, carbs: 28, fats: 4, sugar: 12 },
+      { name: 'Mixed Nuts', serving: '1 handful', cal: 180, protein: 5, fibre: 3, carbs: 6, fats: 16, sugar: 1 },
+      { name: 'Veg Sandwich', serving: '1 pc', cal: 250, protein: 10, fibre: 3, carbs: 35, fats: 8, sugar: 4 },
+      { name: 'Biryani', serving: '1 plate', cal: 400, protein: 12, fibre: 2, carbs: 55, fats: 15, sugar: 2 },
+      { name: 'Poha', serving: '1 bowl', cal: 250, protein: 5, fibre: 3, carbs: 40, fats: 8, sugar: 4 },
+      { name: 'Aloo Paratha', serving: '1 pc', cal: 260, protein: 5, fibre: 2, carbs: 32, fats: 13, sugar: 1 },
+      { name: 'Chole', serving: '1 bowl', cal: 220, protein: 10, fibre: 8, carbs: 30, fats: 6, sugar: 3 }
+    ];
+    const QUICK_FOODS = ['Boiled Egg', 'Banana', 'Curd (Dahi)', 'Roti / Chapati', 'Rice (cooked)', 'Dal', 'Oats Bowl', 'Milk', 'Apple', 'Green Salad'];
+    const MEAL_SLOTS = [{ key: 'breakfast', name: 'Breakfast', icon: '🍳' }, { key: 'lunch', name: 'Lunch', icon: '🍛' }, { key: 'snack', name: 'Snack', icon: '🍪' }, { key: 'dinner', name: 'Dinner', icon: '🍽️' }];
+    function slotName(s) { const m = MEAL_SLOTS.find(x => x.key === s); return m ? m.name : s; }
+    function getLog() { try { return JSON.parse(localStorage.getItem('fe_log') || '{}'); } catch (e) { return {}; } }
+    function saveLog(l) { try { localStorage.setItem('fe_log', JSON.stringify(l)); } catch (e) { } }
+    function migrateOldLog() {
       try {
-        const log = JSON.parse(localStorage.getItem('fe_eaten') || '{}');
-        (log[tk] || []).forEach(e => { const m = meals.find(x => x.id === e.id); if (m) { const n = mealNuts(m); const q = e.qty || 1; NUTRIENT_META.forEach(mm => t[mm.key] += n[mm.key] * q); } });
+        const old = localStorage.getItem('fe_eaten'); if (!old) return;
+        const l = getLog(); const oj = JSON.parse(old);
+        Object.keys(oj).forEach(dt => { const arr = oj[dt] || []; if (!arr.length) return; if (!l[dt]) l[dt] = { entries: [], ordersEaten: [] }; arr.forEach(e => { const m = meals.find(x => x.id === e.id); if (m) { const n = mealNuts(m); const q = e.qty || 1; l[dt].entries.push({ id: Date.now() + Math.random(), meal: 'snack', name: m.name, serving: '', qty: q, nuts: { cal: n.cal, protein: n.protein, fibre: n.fibre, carbs: n.carbs, fats: n.fats, sugar: n.sugar } }); } }); });
+        saveLog(l); localStorage.removeItem('fe_eaten');
       } catch (err) { }
+    }
+    function addFoodEntry(slot, foodName, qty) {
+      const f = FOODS.find(x => x.name === foodName); if (!f) return;
+      const l = getLog(); const tk = todayKey(); if (!l[tk]) l[tk] = { entries: [], ordersEaten: [] };
+      l[tk].entries.push({ id: Date.now() + Math.random(), meal: slot, name: f.name, serving: f.serving, qty: qty || 1, nuts: { cal: f.cal, protein: f.protein, fibre: f.fibre, carbs: f.carbs, fats: f.fats, sugar: f.sugar } });
+      saveLog(l); showToast(`➕ ${f.name} added to ${slotName(slot)}`); renderNutrition();
+    }
+    function removeEntry(id) {
+      const l = getLog(); const tk = todayKey(); const d = l[tk]; if (!d) return;
+      d.entries = d.entries.filter(e => e.id !== id); saveLog(l); renderNutrition();
+    }
+    function toggleOrderEaten(orderId) {
+      const l = getLog(); const tk = todayKey(); if (!l[tk]) l[tk] = { entries: [], ordersEaten: [] };
+      const s = l[tk].ordersEaten; const i = s.indexOf(orderId);
+      if (i >= 0) s.splice(i, 1); else s.push(orderId);
+      saveLog(l); renderNutrition();
+    }
+    function totalsToday() {
+      const t = { cal: 0, protein: 0, fibre: 0, carbs: 0, fats: 0, sugar: 0, estimated: 0 };
+      const d = getLog()[todayKey()];
+      if (d) {
+        d.entries.forEach(e => { const n = e.nuts || {}; const q = e.qty || 1; NUTRIENT_META.forEach(mm => t[mm.key] += (n[mm.key] || 0) * q); t.estimated += 1; });
+        const eaten = new Set(d.ordersEaten || []);
+        allOrders.forEach(o => { if (eaten.has(o.id)) (o.items || []).forEach(i => { const m = meals.find(x => x.id === i.id); if (m) { const n = mealNuts(m); const q = i.qty || 1; NUTRIENT_META.forEach(mm => t[mm.key] += n[mm.key] * q); } }); });
+      }
       return t;
     }
-    function logEaten(id) {
-      const tk = todayKey(); let log = {};
-      try { log = JSON.parse(localStorage.getItem('fe_eaten') || '{}'); } catch (err) { }
-      if (!log[tk]) log[tk] = [];
-      const e = log[tk].find(x => x.id === id);
-      if (e) e.qty += 1; else log[tk].push({ id, qty: 1 });
-      localStorage.setItem('fe_eaten', JSON.stringify(log));
-      const m = meals.find(x => x.id === id);
-      showToast(`✅ ${m ? m.name : 'Meal'} logged as eaten`); renderNutrition();
+    function ordersToday() {
+      const tk = todayKey();
+      return allOrders.filter(o => o.userEmail === loggedInUser.email && o.createdAt && todayKey(new Date(o.createdAt)) === tk && o.status !== 'cancelled' && o.status !== 'missed');
     }
-    function removeEaten(id) {
-      const tk = todayKey(); let log = {};
-      try { log = JSON.parse(localStorage.getItem('fe_eaten') || '{}'); } catch (err) { }
-      const arr = log[tk] || [];
-      const i = arr.findIndex(x => x.id === id);
-      if (i >= 0) { arr[i].qty -= 1; if (arr[i].qty <= 0) arr.splice(i, 1); log[tk] = arr; localStorage.setItem('fe_eaten', JSON.stringify(log)); renderNutrition(); }
+    let nutritionShowDetails = false; let addFoodSlot = null; let foodQuery = '';
+    function renderFoodPanel(slot) {
+      const q = foodQuery.toLowerCase();
+      const filtered = FOODS.filter(f => f.name.toLowerCase().includes(q));
+      const quick = QUICK_FOODS.map(fn => { const f = FOODS.find(x => x.name === fn); if (!f) return ''; return `<button class="shrink-0 px-3 py-1.5 rounded-full bg-bg-offwhite border border-bg-lightgrey text-[11px] font-medium text-soft-black hover:border-fresh-mint transition-all whitespace-nowrap" onclick="addFoodEntry('${slot}','${f.name}',1)">${f.name}</button>`; }).join('');
+      const list = filtered.map((f, i) => `<div class="flex items-center gap-2 py-2 border-b border-bg-lightgrey/60 last:border-0"><div class="flex-1 min-w-0"><p class="text-xs font-bold text-soft-black truncate">${f.name}</p><p class="text-[10px] text-gray-400">${f.serving} · ~${f.cal} kcal · ${f.protein}g protein</p></div><div class="flex items-center gap-1"><input type="number" id="fq-${slot}-${i}" min="1" value="1" class="w-12 text-center px-1 py-1 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-xs font-bold focus:outline-none focus:border-fresh-mint" /><button class="px-3 py-1.5 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm whitespace-nowrap" onclick="addFoodEntry('${slot}','${f.name}',parseInt(document.getElementById('fq-${slot}-${i}').value,10)||1)">Add</button></div></div>`).join('');
+      return `<div class="mt-3 pt-3 border-t border-bg-lightgrey"><p class="text-[10px] text-gray-400 mb-2">⚡ Quick Add</p><div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-3">${quick}</div><div class="relative mb-2"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">🔍</span><input type="text" value="${foodQuery.replace(/"/g, '&quot;')}" placeholder="Search a food..." oninput="setFoodQuery(this.value)" class="w-full pl-8 pr-3 py-2 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-xs focus:outline-none focus:border-fresh-mint" /></div>${list}</div>`;
     }
-    function eatenList() {
-      const tk = todayKey(); const map = {};
-      allOrders.forEach(o => {
-        if (o.userEmail !== loggedInUser.email) return;
-        if (!o.createdAt || todayKey(new Date(o.createdAt)) !== tk) return;
-        if (o.status === 'cancelled' || o.status === 'missed') return;
-        (o.items || []).forEach(i => { if (!map[i.id]) map[i.id] = { id: i.id, name: i.name, qty: 0, manual: false }; map[i.id].qty += (i.qty || 1); });
-      });
-      try {
-        const log = JSON.parse(localStorage.getItem('fe_eaten') || '{}');
-        (log[tk] || []).forEach(e => { if (!map[e.id]) map[e.id] = { id: e.id, name: (meals.find(m => m.id === e.id) || {}).name || 'Meal', qty: 0, manual: true }; map[e.id].qty += (e.qty || 1); if (map[e.id].manual === undefined) map[e.id].manual = false; });
-      } catch (err) { }
-      return Object.values(map);
-    }
-    let nutritionShowDetails = false;
+    function openAddFood(slot) { addFoodSlot = (addFoodSlot === slot) ? null : slot; foodQuery = ''; renderNutrition(); }
+    function setFoodQuery(v) { foodQuery = v; renderNutrition(); }
     function renderNutrition() {
+      migrateOldLog();
       const c = document.getElementById('nutrition-content');
       if (!isLoggedIn) { c.innerHTML = `<div class="text-center py-16 fade-in"><span class="text-6xl block mb-4">🥗</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">Not signed in</h3><p class="text-sm text-gray-500 mb-5">Sign in to see your daily nutrition goals</p><button class="px-8 py-3 rounded-btn bg-soft-black text-white font-bold text-sm btn-press" onclick="document.getElementById('login-overlay').classList.remove('hidden')">Sign In</button></div>`; return; }
       const age = parseInt(loggedInUser.age, 10) || 25;
-      const goals = nutritionGoals(age); const cons = consumedToday();
+      const goals = nutritionGoals(age); const cons = totalsToday();
       const rows = NUTRIENT_META.map(n => { const goal = goals[n.key]; const used = Math.round(cons[n.key]); const remain = Math.max(0, goal - used); const pct = Math.min(100, Math.round((used / goal) * 100)); return Object.assign({}, n, { goal, used, remain, pct }); });
-      const bars = rows.map(r => `<div class="bg-white rounded-card p-4 mb-3 border border-bg-lightgrey shadow-sm"><div class="flex items-center justify-between mb-2"><span class="flex items-center gap-2 text-sm font-bold text-soft-black"><span>${r.icon}</span> ${r.name}</span><span class="text-xs font-medium text-gray-500">${r.used} / ${r.goal} ${r.unit}</span></div><div class="w-full bg-bg-lightgrey rounded-full h-3"><div class="${r.color} h-3 rounded-full transition-all" style="width:${r.pct}%"></div></div><p class="text-xs text-gray-400 mt-1">${r.remain > 0 ? `${r.remain} ${r.unit} remaining` : '✅ Daily goal met'}</p></div>`).join('');
+      const bars = rows.map(r => `<div class="bg-white rounded-card p-4 mb-3 border border-bg-lightgrey shadow-sm"><div class="flex items-center justify-between mb-2"><span class="flex items-center gap-2 text-sm font-bold text-soft-black"><span>${r.icon}</span> ${r.name}</span><span class="text-xs font-medium text-gray-500">${cons.estimated > 0 ? '~' : ''}${r.used} / ${r.goal} ${r.unit}</span></div><div class="w-full bg-bg-lightgrey rounded-full h-3"><div class="${r.color} h-3 rounded-full transition-all" style="width:${r.pct}%"></div></div><p class="text-xs text-gray-400 mt-1">${r.remain > 0 ? `${r.remain} ${r.unit} remaining` : '✅ Daily goal met'}</p></div>`).join('');
       const top = rows.filter(r => ['protein', 'fibre', 'carbs', 'fats'].includes(r.key)).sort((a, b) => (b.remain / b.goal) - (a.remain / a.goal))[0];
       let tip = '';
       if (top && top.remain > 0) {
         const recs = meals.filter(m => mealAvailable(m)).sort((a, b) => (b[top.key] || 0) - (a[top.key] || 0)).slice(0, 3);
-        tip = `<div class="bg-bg-green-tint rounded-card p-4 mb-4 border border-fresh-mint/50 shadow-sm"><div class="flex items-start gap-3"><span class="text-xl">💡</span><div class="flex-1"><p class="text-sm font-bold text-soft-black">You still need ${top.remain}${top.unit} of ${top.name.toLowerCase()} today</p><p class="text-xs text-gray-500 mt-1 mb-3">These available meals can help you reach it:</p><div class="space-y-2">${recs.map(m => `<div class="flex items-center gap-3 bg-white rounded-btn p-2 shadow-sm">${mealThumb(m, 'w-10 h-10 rounded-btn object-cover')}<div class="flex-1 min-w-0"><p class="text-xs font-bold text-soft-black truncate">${m.name}</p><p class="text-[10px] text-gray-400">${top.icon} ${m[top.key] || 0}${top.unit} · ₹${m.price}</p></div><button class="shrink-0 px-3 py-1.5 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="logEaten(${m.id})">+ Log eaten</button></div>`).join('')}</div></div></div></div>`;
+        tip = `<div class="bg-bg-green-tint rounded-card p-4 mb-4 border border-fresh-mint/50 shadow-sm"><div class="flex items-start gap-3"><span class="text-xl">💡</span><div class="flex-1"><p class="text-sm font-bold text-soft-black">You still need ${top.remain}${top.unit} of ${top.name.toLowerCase()} today</p><p class="text-xs text-gray-500 mt-1 mb-3">Try these FreshEats meals to top up:</p><div class="space-y-2">${recs.map(m => `<div class="flex items-center gap-3 bg-white rounded-btn p-2 shadow-sm">${mealThumb(m, 'w-10 h-10 rounded-btn object-cover')}<div class="flex-1 min-w-0"><p class="text-xs font-bold text-soft-black truncate">${m.name}</p><p class="text-[10px] text-gray-400">${top.icon} ${m[top.key] || 0}${top.unit} · ₹${m.price}</p></div><button class="shrink-0 px-3 py-1.5 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="quickAdd(${m.id}); showToast('Added to cart');">+ Add to Cart</button></div>`).join('')}</div></div></div></div>`;
       } else {
         tip = `<div class="bg-fresh-mint/30 rounded-card p-4 mb-4 border border-fresh-mint shadow-sm"><div class="flex items-center gap-3"><span class="text-2xl">🎉</span><p class="text-sm font-bold text-soft-black">All nutrient goals met today! Great work.</p></div></div>`;
       }
-      const avMeals = meals.filter(m => mealAvailable(m));
-      const eaten = eatenList();
-      const eatenRows = eaten.length ? eaten.map(e => { const n = mealNuts(meals.find(m => m.id === e.id) || {}); return `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><div class="flex items-center gap-2"><span class="text-xs font-bold text-soft-black">${e.name}</span>${e.manual ? `<span class="text-[9px] bg-soft-yellow/40 px-1.5 py-0.5 rounded-full text-gray-500">logged</span>` : '<span class="text-[9px] bg-fresh-mint/40 px-1.5 py-0.5 rounded-full text-gray-500">ordered</span>'}<span class="text-[10px] text-gray-400">×${e.qty}</span></div><div class="flex items-center gap-1"><span class="text-[10px] text-gray-400">${n.cal}kcal · ${n.protein}g prot</span>${e.manual ? `<button class="ml-2 text-xs text-soft-coral font-bold" onclick="removeEaten(${e.id})">✕</button>` : ''}</div></div>`; }).join('') : '<p class="text-xs text-gray-400 py-2">Nothing eaten or ordered yet today.</p>';
-      const detTable = NUTRIENT_META.map(n => `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><span class="flex items-center gap-2 text-xs font-medium text-soft-black"><span>${n.icon}</span>${n.name}</span><span class="text-xs text-gray-500"><span class="font-bold text-soft-black">${cons[n.key].toFixed(0)}</span> / ${goals[n.key]} ${n.unit} · <span class="${rows.find(r => r.key === n.key).remain > 0 ? 'text-soft-coral' : 'text-fresh-green'} font-bold">${rows.find(r => r.key === n.key).remain > 0 ? rows.find(r => r.key === n.key).remain + ' left' : 'met'}</span></span></div>`).join('');
-      const details = nutritionShowDetails ? `<div id="nutrition-details" class="mt-4"><div class="bg-white rounded-card p-4 mb-3 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">📊 Daily Targets</h4><p class="text-[10px] text-gray-400 mb-2">Based on your age (${age} years)</p>${detTable}</div><div class="bg-white rounded-card p-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">🍽️ Eaten Today</h4>${eatenRows}</div></div>` : '';
+      const log = getLog(); const day = log[todayKey()] || { entries: [], ordersEaten: [] };
+      const eatenSet = new Set(day.ordersEaten || []);
+      const slotsHtml = MEAL_SLOTS.map(s => {
+        const entries = day.entries.filter(e => e.meal === s.key);
+        const rowsHtml = entries.length ? entries.map(e => `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><div class="flex items-center gap-2"><span class="text-xs font-bold text-soft-black">${e.name}</span><span class="text-[10px] text-gray-400">${e.serving ? e.serving + ' ×' : '×'}${e.qty}</span><span class="text-[9px] bg-soft-yellow/40 px-1.5 py-0.5 rounded-full text-gray-500">~ est.</span></div><div class="flex items-center gap-1"><span class="text-[10px] text-gray-400">~${Math.round(e.nuts.cal * e.qty)} kcal</span><button class="ml-1 text-xs text-soft-coral font-bold" onclick="removeEntry(${e.id})">✕</button></div></div>`).join('') : '<p class="text-xs text-gray-400 py-1.5">Nothing logged yet</p>';
+        const addPanel = addFoodSlot === s.key ? renderFoodPanel(s.key) : '';
+        return `<div class="bg-white rounded-card p-4 mb-3 border border-bg-lightgrey shadow-sm"><div class="flex items-center justify-between mb-2"><h4 class="font-heading font-bold text-soft-black text-sm">${s.icon} ${s.name}</h4><span class="text-xs text-gray-400 font-medium">${entries.reduce((x, e) => x + Math.round(e.nuts.cal * e.qty), 0)} kcal</span></div>${rowsHtml}${addPanel}<button class="w-full mt-2 py-2 rounded-btn border border-dashed border-bg-lightgrey text-xs font-bold text-fresh-green hover:bg-bg-green-tint transition-all" onclick="openAddFood('${s.key}')">${addFoodSlot === s.key ? '✕ Close' : '＋ Add Food'}</button></div>`;
+      }).join('');
+      const orders = ordersToday();
+      const ordersHtml = orders.length ? orders.map(o => { const eaten = eatenSet.has(o.id); const names = o.items.map(i => `${i.name} ×${i.qty}`).join(', '); return `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><div class="flex-1 min-w-0"><p class="text-xs font-bold text-soft-black truncate">${names}</p><p class="text-[10px] text-gray-400">#${String(o.id).slice(-6)} · ${o.orderType} · ${o.status}</p></div><button class="shrink-0 px-3 py-1.5 rounded-btn text-xs font-bold btn-press shadow-sm ${eaten ? 'bg-fresh-mint text-soft-black' : 'bg-bg-lightgrey text-gray-600'}" onclick="toggleOrderEaten(${o.id})">${eaten ? '✓ Eaten' : 'Mark eaten'}</button></div>`; }).join('') : '<p class="text-xs text-gray-400 py-2">No FreshEats orders today — meals are counted here once marked eaten.</p>';
+      const detTable = NUTRIENT_META.map(n => { const r = rows.find(x => x.key === n.key); return `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><span class="flex items-center gap-2 text-xs font-medium text-soft-black"><span>${n.icon}</span>${n.name}</span><span class="text-xs text-gray-500"><span class="font-bold text-soft-black">${cons.estimated > 0 ? '~' : ''}${r.used}</span> / ${r.goal} ${n.unit} · <span class="${r.remain > 0 ? 'text-soft-coral' : 'text-fresh-green'} font-bold">${r.remain > 0 ? r.remain + ' left' : 'met'}</span></span></div>`; }).join('');
+      const estNote = cons.estimated > 0 ? '<p class="text-[10px] text-gray-400 mt-2">~ Manually added foods use approximate values from standard serving sizes.</p>' : '';
+      const orderItems = orders.filter(o => eatenSet.has(o.id)).flatMap(o => o.items.map(i => { const m = meals.find(x => x.id === i.id); return { order: true, name: i.name, qty: i.qty, nuts: m ? mealNuts(m) : { cal: 0, protein: 0, fibre: 0, carbs: 0, fats: 0, sugar: 0 } }; }));
+      const details = nutritionShowDetails ? `<div id="nutrition-details" class="mt-4"><div class="bg-white rounded-card p-4 mb-3 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">📊 Daily Targets</h4><p class="text-[10px] text-gray-400 mb-2">Based on your age (${age} years)</p>${detTable}${estNote}</div><div class="bg-white rounded-card p-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">🍽️ Today's Log</h4><p class="text-[10px] text-gray-400 mb-1">FreshEats orders marked eaten + manually added foods</p>${day.entries.concat(orderItems).map(e => `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><div class="flex items-center gap-2"><span class="text-xs font-bold text-soft-black">${e.name}</span><span class="text-[10px] text-gray-400">×${e.qty}</span>${e.order ? '<span class="text-[9px] bg-fresh-mint/40 px-1.5 py-0.5 rounded-full text-gray-500">FreshEats</span>' : '<span class="text-[9px] bg-soft-yellow/40 px-1.5 py-0.5 rounded-full text-gray-500">~ est.</span>'}</div><span class="text-[10px] text-gray-400">${Math.round((e.nuts.cal || 0) * e.qty)} kcal · ${Math.round((e.nuts.protein || 0) * e.qty)}g protein</span></div>`).join('') || '<p class="text-xs text-gray-400 py-2">Nothing logged yet today.</p>'}</div></div>` : '';
       c.innerHTML = `
-        <div class="flex items-center justify-between mb-1 fade-in"><div><h2 class="text-xl font-heading font-bold text-soft-black">Today's Nutrition</h2><p class="text-sm text-gray-500">${new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short' })}</p></div><span class="text-xs bg-bg-offwhite border border-bg-lightgrey px-2 py-1 rounded-full text-gray-500">🎂 Age ${age}</span></div>
-        <div class="text-center bg-gradient-to-br from-bg-green-tint to-fresh-mint/30 rounded-card p-4 mb-4 shadow-sm"><span class="text-3xl font-heading font-bold text-fresh-green">${rows.reduce((s, r) => s + (r.pct >= 100 ? 1 : 0), 0)}/6</span><p class="text-xs font-medium text-gray-600 mt-1">nutrient goals met today</p></div>
+        <div class="flex items-center justify-between mb-1 fade-in"><div><h2 class="text-xl font-heading font-bold text-soft-black">Daily Nutrition Tracker</h2><p class="text-sm text-gray-500">${new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short' })}</p></div><span class="text-xs bg-bg-offwhite border border-bg-lightgrey px-2 py-1 rounded-full text-gray-500">🎂 Age ${age}</span></div>
+        <div class="text-center bg-gradient-to-br from-bg-green-tint to-fresh-mint/30 rounded-card p-4 mb-4 shadow-sm"><div class="flex items-center justify-center gap-6"><div><span class="text-3xl font-heading font-bold text-fresh-green">${cons.estimated > 0 ? '~' : ''}${Math.round(cons.cal)}</span><p class="text-[10px] font-medium text-gray-600">of ${goals.cal} kcal</p></div><div class="w-px h-10 bg-bg-lightgrey"></div><div><span class="text-3xl font-heading font-bold text-soft-black">${rows.reduce((s, r) => s + (r.pct >= 100 ? 1 : 0), 0)}/6</span><p class="text-[10px] font-medium text-gray-600">goals met</p></div></div></div>
         ${tip}
         ${bars}
-        <div class="bg-white rounded-card p-4 mb-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-2">🍴 Log a Meal as Eaten</h4><p class="text-[10px] text-gray-400 mb-2">Orders today are counted automatically. Tap a meal below to log it manually.</p><div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">${avMeals.map(m => `<button class="shrink-0 px-3 py-2 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-xs font-medium text-soft-black hover:border-fresh-mint transition-all" onclick="logEaten(${m.id})">${m.name}</button>`).join('')}</div></div>
+        <div class="bg-white rounded-card p-4 mb-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">📋 Your Meals</h4><p class="text-[10px] text-gray-400 mb-3">Log anything you eat — from FreshEats or outside.</p>${slotsHtml}</div>
+        <div class="bg-white rounded-card p-4 mb-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">🍱 FreshEats Orders Today</h4><p class="text-[10px] text-gray-400 mb-2">Mark each order as eaten to count its nutrition automatically.</p>${ordersHtml}</div>
         <button class="w-full py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press mb-6" onclick="nutritionShowDetails = !nutritionShowDetails; renderNutrition()">${nutritionShowDetails ? 'Hide' : 'View'} Nutrition Details</button>
         ${details}`;
     }
