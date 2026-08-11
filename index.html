@@ -573,8 +573,9 @@
             <label class="flex-1 cursor-pointer"><input type="radio" name="order-type" value="delivery" class="peer hidden" onclick="toggleLocationField()" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-mint peer-checked:bg-bg-green-tint rounded-btn p-3 text-center transition-all shadow-sm"><span class="text-xl">📦</span><p class="text-xs font-bold text-soft-black mt-1">Delivery</p></div></label>
           </div>
         </div>
-        <div class="mb-4"><h4 class="font-heading font-bold text-soft-black text-sm mb-3">Pick a time slot</h4>
-          <div class="grid grid-cols-3 gap-2">${['11:30 AM', '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM'].map(t => `<label class="cursor-pointer"><input type="radio" name="time-slot" value="${t}" class="peer hidden" /><div class="border border-bg-lightgrey peer-checked:border-fresh-mint peer-checked:bg-bg-green-tint rounded-btn p-2 text-center text-xs font-medium text-soft-black transition-all peer-checked:font-bold shadow-sm">${t}</div></label>`).join('')}</div>
+        <div class="mb-4"><h4 class="font-heading font-bold text-soft-black text-sm mb-3">⏰ When do you want it?</h4>
+          <input type="text" id="time-slot" placeholder="e.g. 1:15 PM" autocomplete="off" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all" />
+          <p class="text-xs text-gray-400 mt-1">Enter your preferred time for pickup or delivery</p>
         </div>
         <div class="mb-4 hidden" id="location-field">
           <h4 class="font-heading font-bold text-soft-black text-sm mb-2">📍 Delivery Location</h4>
@@ -618,7 +619,8 @@
       const m = meals.find(x => x.id === mealId); if (!m) return;
       if (!mealAvailable(m)) { showToast('⛔ ' + m.name + ' is out of stock'); return; }
       const ot = document.querySelector('input[name="order-type"]:checked')?.value || 'pickup';
-      const ts = document.querySelector('input[name="time-slot"]:checked')?.value || '12:00 PM';
+      const ts = document.getElementById('time-slot')?.value.trim();
+      if (!ts) { showToast('⏰ Please enter your preferred time'); return; }
       const loc = document.getElementById('delivery-location')?.value || loggedInUser.location || '';
       const e = cart.find(i => i.id === mealId && i.orderType === ot && i.timeSlot === ts);
       if (e) e.qty += mealQty; else cart.push({ id: m.id, name: m.name, emoji: m.emoji, img: mealImg(m), price: m.price, qty: mealQty, orderType: ot, timeSlot: ts, location: loc });
@@ -628,9 +630,9 @@
     function quickAdd(mealId) {
       const m = meals.find(x => x.id === mealId); if (!m) return;
       if (!mealAvailable(m)) { showToast('⛔ ' + m.name + ' is out of stock'); return; }
-      const e = cart.find(i => i.id === mealId && i.orderType === 'pickup' && i.timeSlot === '12:00 PM');
-      if (e) e.qty += 1; else cart.push({ id: m.id, name: m.name, emoji: m.emoji, img: mealImg(m), price: m.price, qty: 1, orderType: 'pickup', timeSlot: '12:00 PM', location: loggedInUser.location || '' });
-      updateCart(); showToast(`🛒 ${m.name} added to cart`);
+      const e = cart.find(i => i.id === mealId && i.orderType === 'pickup' && i.timeSlot === '');
+      if (e) e.qty += 1; else cart.push({ id: m.id, name: m.name, emoji: m.emoji, img: mealImg(m), price: m.price, qty: 1, orderType: 'pickup', timeSlot: '', location: loggedInUser.location || '' });
+      updateCart(); showToast(`🛒 ${m.name} added — set your time in the cart`);
     }
     function showToast(msg) {
       const t = document.getElementById('toast'); if (!t) return;
@@ -645,16 +647,19 @@
     function renderCart() {
       const c = document.getElementById('cart-content');
       if (!cart.length) { c.innerHTML = `<div class="text-center py-16 fade-in"><span class="text-6xl block mb-4">🛒</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">Your cart is empty</h3><p class="text-sm text-gray-500 mb-5">Browse the menu and add items you'd like!</p><button class="px-8 py-3 rounded-btn bg-fresh-mint text-soft-black font-bold text-sm btn-press" onclick="showScreen('home')">Browse Menu</button></div>`; return; }
-      let t = 0; const ih = cart.map(i => { const it = i.price * i.qty; t += it; return `<div class="flex items-center gap-3 bg-bg-offwhite rounded-card p-3 mb-2 fade-in">${mealThumb(i, 'w-12 h-12 rounded-btn object-cover')}<div class="flex-1 min-w-0"><p class="font-heading font-bold text-soft-black text-sm">${i.name}</p><p class="text-xs text-gray-500">${i.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery'} · ${i.timeSlot}</p></div><div class="text-right"><p class="font-heading font-bold text-soft-black text-sm">₹${it}</p><p class="text-xs text-gray-500">×${i.qty}</p></div><button class="text-gray-400 hover:text-soft-coral transition-colors text-lg btn-press" onclick="removeFromCart(${i.id},'${i.orderType}','${i.timeSlot}')">✕</button></div>`; }).join('');
+      let t = 0; const ih = cart.map(i => { const it = i.price * i.qty; t += it; return `<div class="flex items-center gap-3 bg-bg-offwhite rounded-card p-3 mb-2 fade-in">${mealThumb(i, 'w-12 h-12 rounded-btn object-cover')}<div class="flex-1 min-w-0"><p class="font-heading font-bold text-soft-black text-sm">${i.name}</p>${i.timeSlot ? `<p class="text-xs text-gray-500">${i.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery'} · ⏰ ${i.timeSlot}</p>` : `<p class="text-xs text-gray-500">${i.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery'} · ⏰ <input id="cart-time-${i.id}-${i.orderType}" placeholder="Add time e.g. 1:15 PM" value="${i.timeSlot}" oninput="onCartTime(${i.id},'${i.orderType}',this.value)" class="w-32 text-xs px-2 py-1 rounded-btn bg-white border border-soft-coral/60 focus:outline-none focus:border-fresh-mint" /></p>`}</div><div class="text-right"><p class="font-heading font-bold text-soft-black text-sm">₹${it}</p><p class="text-xs text-gray-500">×${i.qty}</p></div><button class="text-gray-400 hover:text-soft-coral transition-colors text-lg btn-press" onclick="removeFromCart(${i.id},'${i.orderType}','${i.timeSlot}')">✕</button></div>`; }).join('');
       const g = Math.round(t * 0.05);
       c.innerHTML = `${ih}<div class="border-t border-bg-lightgrey mt-4 pt-4"><div class="flex justify-between mb-1"><span class="text-sm text-gray-500">Subtotal</span><span class="text-sm font-medium text-soft-black">₹${t}</span></div>${t > 0 ? `<div class="flex justify-between mb-1"><span class="text-sm text-gray-500">GST (5%)</span><span class="text-sm font-medium text-soft-black">₹${g}</span></div>` : ''}<div class="flex justify-between mt-2 pt-2 border-t border-bg-lightgrey"><span class="font-heading font-bold text-soft-black">Total</span><span class="font-heading font-bold text-fresh-green text-lg">₹${t + g}</span></div></div><div class="mt-4 mb-3"><h4 class="font-heading font-bold text-soft-black text-sm mb-2">Payment Method</h4><div class="flex gap-2"><label class="flex-1 cursor-pointer"><input type="radio" name="payment" value="upi" checked class="peer hidden" /><div class="border border-bg-lightgrey peer-checked:border-fresh-mint peer-checked:bg-bg-green-tint rounded-btn p-2 text-center text-xs font-medium transition-all shadow-sm">📱 UPI</div></label><label class="flex-1 cursor-pointer"><input type="radio" name="payment" value="card" class="peer hidden" /><div class="border border-bg-lightgrey peer-checked:border-fresh-mint peer-checked:bg-bg-green-tint rounded-btn p-2 text-center text-xs font-medium transition-all shadow-sm">💳 Card</div></label><label class="flex-1 cursor-pointer"><input type="radio" name="payment" value="lunch_card" class="peer hidden" /><div class="border border-bg-lightgrey peer-checked:border-fresh-mint peer-checked:bg-bg-green-tint rounded-btn p-2 text-center text-xs font-medium transition-all shadow-sm">🍱 Lunch Card</div></label></div></div><button class="w-full py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press" onclick="placeOrder()">Place Order — ₹${t + g}</button>`;
     }
     function removeFromCart(id, ot, ts) { cart = cart.filter(i => !(i.id === id && i.orderType === ot && i.timeSlot === ts)); updateCart(); }
+    function onCartTime(id, ot, val) { const i = cart.find(x => x.id === id && x.orderType === ot); if (i) i.timeSlot = val.trim(); }
     function placeOrder() {
       if (!isLoggedIn) { document.getElementById('login-overlay').classList.remove('hidden'); return; }
       if (!cart.length) return;
       const oos = cart.find(i => !mealAvailable(i));
       if (oos) { showToast('⛔ ' + oos.name + ' is out of stock — remove it to continue'); return; }
+      const noTime = cart.find(i => !i.timeSlot);
+      if (noTime) { showToast('⏰ Please set a time for ' + noTime.name); return; }
       const t = cart.reduce((s, i) => s + i.price * i.qty, 0); const g = Math.round(t * 0.05);
       const order = { id: Date.now(), items: [...cart], total: t + g, subtotal: t, gst: g, paymentMethod: document.querySelector('input[name="payment"]:checked')?.value || 'upi', status: 'confirmed', createdAt: new Date(), timeSlot: cart[0].timeSlot, orderType: cart[0].orderType, userId: loggedInUser.email, rating: 0, userName: loggedInUser.name, userEmail: loggedInUser.email };
       allOrders.unshift(order);
@@ -679,7 +684,7 @@
         </div>
         <div class="bg-bg-offwhite rounded-card p-4 mb-4">
           <div class="flex items-center justify-between mb-2 text-sm"><span class="text-gray-500">Pickup / Delivery</span><span class="font-medium text-soft-black">${o.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery'}</span></div>
-          <div class="flex items-center justify-between mb-2 text-sm"><span class="text-gray-500">Time slot</span><span class="font-medium text-soft-black">⏰ ${o.timeSlot}</span></div>
+          <div class="flex items-center justify-between mb-2 text-sm"><span class="text-gray-500">Preferred time</span><span class="font-medium text-soft-black">⏰ ${o.timeSlot}</span></div>
           <div class="flex items-center justify-between text-sm"><span class="text-gray-500">Payment</span><span class="font-medium text-soft-black">💳 ${o.paymentMethod === 'upi' ? 'UPI' : o.paymentMethod === 'card' ? 'Card' : 'Lunch Card'}</span></div>
         </div>
         <div class="flex gap-2">
