@@ -441,7 +441,7 @@
     const allOrders = [];
     let accounts = [];
     let streakData = { currentStreak: 0, longestStreak: 0, points: 0, weekLog: [false, false, false, false, false, false, false] };
-    let vendorMeals = meals.map(m => ({ ...m, available: false, stock: 10 }));
+    let vendorMeals = meals.map(m => ({ ...m, available: true, stock: 10 }));
     let mealSuggestions = [];
 
     // ========== LOCALSTORAGE PERSISTENCE ==========
@@ -475,7 +475,6 @@
         if (sg) { const arr = JSON.parse(sg); arr.forEach(x => mealSuggestions.push(x)); }
         const vd = localStorage.getItem('fe_vendor');
         if (vd) { const arr = JSON.parse(vd); arr.forEach(x => { const v = vendorMeals.find(y => y.id === x.id); if (v) { v.available = x.available; v.stock = x.stock; } }); }
-        if (localStorage.getItem('fe_vendor_v2') !== '1') { vendorMeals.forEach(v => { v.available = false; v.stock = 10; }); localStorage.setItem('fe_vendor_v2', '1'); }
         const ac = localStorage.getItem('fe_accounts');
         if (ac) accounts = JSON.parse(ac);
       } catch (e) { }
@@ -842,7 +841,7 @@
       if (s === 'ready' && o.orderType === 'pickup') s = 'completed';
       o.status = s; if (s === 'preparing') { o.preparedBy = loggedInUser.name; o.preparedByEmail = loggedInUser.email; } if (s === 'ready') { o.preparedBy = loggedInUser.name; o.preparedByEmail = loggedInUser.email; o.readyAt = new Date(); } saveState(); renderVendor();
     }
-    function addSuggestionToMenu(sid) { const s = mealSuggestions.find(x => x.id === sid); if (!s) return; const newId = Math.max(...meals.map(m => m.id), 0) + 1; const newMeal = { id: newId, name: s.name, emoji: '🍽️', price: 199, description: s.desc, ingredients: s.desc, calories: 300, protein: 15, fibre: 8, tag: 'Suggested' }; meals.push(newMeal); vendorMeals.push({ ...newMeal, available: false, stock: 10 }); s.status = 'added'; saveState(); renderVendor(); }
+    function addSuggestionToMenu(sid) { const s = mealSuggestions.find(x => x.id === sid); if (!s) return; const newId = Math.max(...meals.map(m => m.id), 0) + 1; const newMeal = { id: newId, name: s.name, emoji: '🍽️', price: 199, description: s.desc, ingredients: s.desc, calories: 300, protein: 15, fibre: 8, tag: 'Suggested' }; meals.push(newMeal); vendorMeals.push({ ...newMeal, available: true, stock: 10 }); s.status = 'added'; saveState(); renderVendor(); }
     function ignoreSuggestion(sid) { const s = mealSuggestions.find(x => x.id === sid); if (!s) return; s.status = 'ignored'; saveState(); renderVendor(); }
     let newMealImg = '';
     function onNewMealImageSelected() {
@@ -870,7 +869,7 @@
       if (!name || !price || price <= 0) { showToast('⚠️ Please enter a meal name and a valid price'); return; }
       const newId = Math.max(...meals.map(m => m.id), 0) + 1;
       const newMeal = { id: newId, name, emoji: '🍽️', img: newMealImg, price, description: desc, ingredients: desc || name, calories: parseInt(document.getElementById('new-meal-cal').value, 10) || 300, protein: parseInt(document.getElementById('new-meal-protein').value, 10) || 15, fibre: parseInt(document.getElementById('new-meal-fibre').value, 10) || 8, tag: document.getElementById('new-meal-tag').value };
-      meals.push(newMeal); vendorMeals.push({ ...newMeal, available: false, stock: 10 });
+      meals.push(newMeal); vendorMeals.push({ ...newMeal, available: true, stock: 10 });
       document.getElementById('new-meal-name').value = ''; document.getElementById('new-meal-price').value = ''; document.getElementById('new-meal-desc').value = ''; document.getElementById('new-meal-cal').value = ''; document.getElementById('new-meal-protein').value = ''; document.getElementById('new-meal-fibre').value = '';
       newMealImg = ''; const pv = document.getElementById('new-meal-img-preview'); if (pv) pv.innerHTML = '<span class="text-3xl mb-1">📷</span><span class="text-xs font-medium">Tap to upload a photo</span>';
       saveState(); showToast(`✅ "${name}" added to the menu`); showScreen('vendor');
