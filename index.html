@@ -846,20 +846,13 @@
       const l = getLog(); const tk = todayKey(); const d = l[tk]; if (!d) return;
       d.entries = d.entries.filter(e => e.id !== id); saveLog(l); renderNutrition();
     }
-    function toggleOrderEaten(orderId) {
-      const l = getLog(); const tk = todayKey(); if (!l[tk]) l[tk] = { entries: [], ordersEaten: [] };
-      const s = l[tk].ordersEaten; const i = s.indexOf(orderId);
-      if (i >= 0) s.splice(i, 1); else s.push(orderId);
-      saveLog(l); renderNutrition();
-    }
     function totalsToday() {
       const t = { cal: 0, protein: 0, fibre: 0, carbs: 0, fats: 0, sugar: 0, estimated: 0 };
       const d = getLog()[todayKey()];
       if (d) {
         d.entries.forEach(e => { const n = e.nuts || {}; const q = e.qty || 1; NUTRIENT_META.forEach(mm => t[mm.key] += (n[mm.key] || 0) * q); t.estimated += 1; });
-        const eaten = new Set(d.ordersEaten || []);
-        allOrders.forEach(o => { if (eaten.has(o.id)) (o.items || []).forEach(i => { const m = meals.find(x => x.id === i.id); if (m) { const n = mealNuts(m); const q = i.qty || 1; NUTRIENT_META.forEach(mm => t[mm.key] += n[mm.key] * q); } }); });
       }
+      ordersToday().forEach(o => (o.items || []).forEach(i => { const m = meals.find(x => x.id === i.id); if (m) { const n = mealNuts(m); const q = i.qty || 1; NUTRIENT_META.forEach(mm => t[mm.key] += n[mm.key] * q); } }));
       return t;
     }
     function ordersToday() {
@@ -893,7 +886,6 @@
         tip = `<div class="bg-fresh-mint/30 rounded-card p-4 mb-4 border border-fresh-mint shadow-sm"><div class="flex items-center gap-3"><span class="text-2xl">🎉</span><p class="text-sm font-bold text-soft-black">All nutrient goals met today! Great work.</p></div></div>`;
       }
       const log = getLog(); const day = log[todayKey()] || { entries: [], ordersEaten: [] };
-      const eatenSet = new Set(day.ordersEaten || []);
       const slotsHtml = MEAL_SLOTS.map(s => {
         const entries = day.entries.filter(e => e.meal === s.key);
         const rowsHtml = entries.length ? entries.map(e => `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><div class="flex items-center gap-2"><span class="text-xs font-bold text-soft-black">${e.name}</span><span class="text-[10px] text-gray-400">${e.serving ? e.serving + ' ×' : '×'}${e.qty}</span><span class="text-[9px] bg-soft-yellow/40 px-1.5 py-0.5 rounded-full text-gray-500">~ est.</span></div><div class="flex items-center gap-1"><span class="text-[10px] text-gray-400">~${Math.round(e.nuts.cal * e.qty)} kcal</span><button class="ml-1 text-xs text-soft-coral font-bold" onclick="removeEntry(${e.id})">✕</button></div></div>`).join('') : '<p class="text-xs text-gray-400 py-1.5">Nothing logged yet</p>';
@@ -901,10 +893,10 @@
         return `<div class="bg-white rounded-card p-4 mb-3 border border-bg-lightgrey shadow-sm"><div class="flex items-center justify-between mb-2"><h4 class="font-heading font-bold text-soft-black text-sm">${s.icon} ${s.name}</h4><span class="text-xs text-gray-400 font-medium">${entries.reduce((x, e) => x + Math.round(e.nuts.cal * e.qty), 0)} kcal</span></div>${rowsHtml}${addPanel}<button class="w-full mt-2 py-2 rounded-btn border border-dashed border-bg-lightgrey text-xs font-bold text-fresh-green hover:bg-bg-green-tint transition-all" onclick="openAddFood('${s.key}')">${addFoodSlot === s.key ? '✕ Close' : '＋ Add Food'}</button></div>`;
       }).join('');
       const orders = ordersToday();
-      const ordersHtml = orders.length ? orders.map(o => { const eaten = eatenSet.has(o.id); const names = o.items.map(i => `${i.name} ×${i.qty}`).join(', '); return `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><div class="flex-1 min-w-0"><p class="text-xs font-bold text-soft-black truncate">${names}</p><p class="text-[10px] text-gray-400">#${String(o.id).slice(-6)} · ${o.orderType} · ${o.status}</p></div><button class="shrink-0 px-3 py-1.5 rounded-btn text-xs font-bold btn-press shadow-sm ${eaten ? 'bg-fresh-mint text-soft-black' : 'bg-bg-lightgrey text-gray-600'}" onclick="toggleOrderEaten(${o.id})">${eaten ? '✓ Eaten' : 'Mark eaten'}</button></div>`; }).join('') : '<p class="text-xs text-gray-400 py-2">No FreshEats orders today — meals are counted here once marked eaten.</p>';
+      const ordersHtml = orders.length ? orders.map(o => { const names = o.items.map(i => `${i.name} ×${i.qty}`).join(', '); return `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><div class="flex-1 min-w-0"><p class="text-xs font-bold text-soft-black truncate">${names}</p><p class="text-[10px] text-gray-400">#${String(o.id).slice(-6)} · ${o.orderType} · ${o.status}</p></div><span class="shrink-0 text-[10px] bg-fresh-mint/40 px-2 py-1 rounded-full text-gray-500">✓ Counted</span></div>`; }).join('') : '<p class="text-xs text-gray-400 py-2">No FreshEats orders today.</p>';
       const detTable = NUTRIENT_META.map(n => { const r = rows.find(x => x.key === n.key); return `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><span class="flex items-center gap-2 text-xs font-medium text-soft-black"><span>${n.icon}</span>${n.name}</span><span class="text-xs text-gray-500"><span class="font-bold text-soft-black">${cons.estimated > 0 ? '~' : ''}${r.used}</span> / ${r.goal} ${n.unit} · <span class="${r.remain > 0 ? 'text-soft-coral' : 'text-fresh-green'} font-bold">${r.remain > 0 ? r.remain + ' left' : 'met'}</span></span></div>`; }).join('');
       const estNote = cons.estimated > 0 ? '<p class="text-[10px] text-gray-400 mt-2">~ Manually added foods use approximate values from standard serving sizes.</p>' : '';
-      const orderItems = orders.filter(o => eatenSet.has(o.id)).flatMap(o => o.items.map(i => { const m = meals.find(x => x.id === i.id); return { order: true, name: i.name, qty: i.qty, nuts: m ? mealNuts(m) : { cal: 0, protein: 0, fibre: 0, carbs: 0, fats: 0, sugar: 0 } }; }));
+      const orderItems = orders.flatMap(o => o.items.map(i => { const m = meals.find(x => x.id === i.id); return { order: true, name: i.name, qty: i.qty, nuts: m ? mealNuts(m) : { cal: 0, protein: 0, fibre: 0, carbs: 0, fats: 0, sugar: 0 } }; }));
       const details = nutritionShowDetails ? `<div id="nutrition-details" class="mt-4"><div class="bg-white rounded-card p-4 mb-3 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">📊 Daily Targets</h4><p class="text-[10px] text-gray-400 mb-2">Based on your age (${age} years)</p>${detTable}${estNote}</div><div class="bg-white rounded-card p-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">🍽️ Today's Log</h4><p class="text-[10px] text-gray-400 mb-1">FreshEats orders marked eaten + manually added foods</p>${day.entries.concat(orderItems).map(e => `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><div class="flex items-center gap-2"><span class="text-xs font-bold text-soft-black">${e.name}</span><span class="text-[10px] text-gray-400">×${e.qty}</span>${e.order ? '<span class="text-[9px] bg-fresh-mint/40 px-1.5 py-0.5 rounded-full text-gray-500">FreshEats</span>' : '<span class="text-[9px] bg-soft-yellow/40 px-1.5 py-0.5 rounded-full text-gray-500">~ est.</span>'}</div><span class="text-[10px] text-gray-400">${Math.round((e.nuts.cal || 0) * e.qty)} kcal · ${Math.round((e.nuts.protein || 0) * e.qty)}g protein</span></div>`).join('') || '<p class="text-xs text-gray-400 py-2">Nothing logged yet today.</p>'}</div></div>` : '';
       c.innerHTML = `
         <div class="flex items-center justify-between mb-1 fade-in"><div><h2 class="text-xl font-heading font-bold text-soft-black">Daily Nutrition Tracker</h2><p class="text-sm text-gray-500">${new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short' })}</p></div><span class="text-xs bg-bg-offwhite border border-bg-lightgrey px-2 py-1 rounded-full text-gray-500">🎂 Age ${age}</span></div>
@@ -912,7 +904,7 @@
         ${tip}
         ${bars}
         <div class="bg-white rounded-card p-4 mb-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">📋 Your Meals</h4><p class="text-[10px] text-gray-400 mb-3">Log anything you eat — from FreshEats or outside.</p>${slotsHtml}</div>
-        <div class="bg-white rounded-card p-4 mb-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">🍱 FreshEats Orders Today</h4><p class="text-[10px] text-gray-400 mb-2">Mark each order as eaten to count its nutrition automatically.</p>${ordersHtml}</div>
+        <div class="bg-white rounded-card p-4 mb-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">🍱 FreshEats Orders Today</h4><p class="text-[10px] text-gray-400 mb-2">Every order you place today is counted in your nutrition automatically.</p>${ordersHtml}</div>
         <button class="w-full py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press mb-6" onclick="nutritionShowDetails = !nutritionShowDetails; renderNutrition()">${nutritionShowDetails ? 'Hide' : 'View'} Nutrition Details</button>
         ${details}`;
     }
