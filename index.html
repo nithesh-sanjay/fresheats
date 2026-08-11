@@ -1118,6 +1118,7 @@
       loggedInUser.role = role; const b = document.getElementById('role-badge');
       document.getElementById('nav-streaks-btn').classList.toggle('hidden', role !== 'worker' && role !== 'delivery');
       document.getElementById('nav-addmeal-btn').classList.toggle('hidden', role !== 'vendor');
+      document.querySelector('.nav-nutrition').classList.toggle('hidden', role === 'delivery');
       document.getElementById('cart-btn').classList.toggle('hidden', role !== 'worker');
       if (role === 'worker') { b.classList.add('hidden'); showScreen('home'); return; }
       b.classList.remove('hidden'); b.textContent = role.charAt(0).toUpperCase() + role.slice(1); showScreen(role);
@@ -1127,6 +1128,7 @@
       if (!isLoggedIn && name !== 'auth') { document.getElementById('bottom-nav').classList.add('hidden'); showEmailAuth(); return; }
       if (name === 'auth' && !isLoggedIn) document.getElementById('bottom-nav').classList.add('hidden'); else document.getElementById('bottom-nav').classList.remove('hidden');
       if (name === 'home' && isLoggedIn && loggedInUser.role !== 'worker') name = loggedInUser.role;
+      if (name === 'nutrition' && isLoggedIn && loggedInUser.role === 'delivery') name = 'delivery';
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       if (name === 'home') renderHome(); if (name === 'cart') renderCart(); if (name === 'orders') renderOrders(); if (name === 'streaks') renderStreaks(); if (name === 'nutrition') renderNutrition(); if (name === 'profile') renderProfile();
       if (name === 'vendor') renderVendor(); if (name === 'delivery') renderDelivery(); if (name === 'admin') renderAdmin();
