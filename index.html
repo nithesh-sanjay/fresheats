@@ -252,6 +252,11 @@
       <div id="streaks-content"></div>
     </div>
 
+    <!-- TODAY'S NUTRITION -->
+    <div id="screen-nutrition" class="screen px-4 pt-4">
+      <div id="nutrition-content"></div>
+    </div>
+
     <!-- PROFILE -->
     <div id="screen-profile" class="screen px-4 pt-4">
       <div id="profile-content"></div>
@@ -346,10 +351,12 @@
       class="fixed bottom-0 left-1/2 -translate-x-1/2 max-w-lg w-full bg-white/90 backdrop-blur-md border-t border-bg-lightgrey px-4 py-2 flex items-center justify-around z-30">
       <button class="flex flex-col items-center gap-0.5 nav-home btn-press" onclick="showScreen('home')"><span
           class="text-xl">🏠</span><span class="text-[10px] font-medium">Home</span></button>
-      <button class="flex flex-col items-center gap-0.5 nav-orders btn-press" onclick="showScreen('orders')"><span
-          class="text-xl">📋</span><span class="text-[10px] font-medium">History</span></button>
       <button id="nav-streaks-btn" class="flex flex-col items-center gap-0.5 nav-streaks btn-press" onclick="showScreen('streaks')"><span
           class="text-xl">⭐</span><span class="text-[10px] font-medium">Streaks</span></button>
+      <button class="flex flex-col items-center gap-0.5 nav-nutrition btn-press" onclick="showScreen('nutrition')"><span
+          class="text-xl">🥗</span><span class="text-[10px] font-medium">Nutrition</span></button>
+      <button class="flex flex-col items-center gap-0.5 nav-orders btn-press" onclick="showScreen('orders')"><span
+          class="text-xl">📋</span><span class="text-[10px] font-medium">History</span></button>
       <button id="nav-addmeal-btn" class="hidden flex flex-col items-center gap-0.5 nav-addmeal btn-press" onclick="showScreen('addmeal')"><span
           class="text-xl">🍽️</span><span class="text-[10px] font-medium">Add Meal</span></button>
       <button class="flex flex-col items-center gap-0.5 nav-profile btn-press" onclick="showScreen('profile')"><span
@@ -395,21 +402,21 @@
     setTimeout(() => document.getElementById('splash').classList.add('hidden'), 600);
 
     const meals = [
-      { id: 1, name: 'Grilled Chicken Bowl', emoji: '🥗', price: 249, description: 'Tender grilled chicken, quinoa, avocado, mixed greens, and a light lemon dressing.', ingredients: 'Grilled chicken breast, quinoa, avocado, mixed greens, cherry tomatoes, cucumber, lemon olive oil dressing, sea salt, black pepper.', calories: 350, protein: 28, fibre: 12, tag: 'Bowls' },
-      { id: 2, name: 'Rainbow Veggie Wrap', emoji: '🌯', price: 199, description: 'Whole wheat wrap filled with fresh veggies, hummus, and a tangy yogurt sauce.', ingredients: 'Whole wheat tortilla, hummus, bell peppers, carrots, lettuce, cucumber, yogurt sauce, mint, lemon juice.', calories: 280, protein: 12, fibre: 8, tag: 'Wraps' },
-      { id: 3, name: 'Berry Protein Smoothie', emoji: '🥤', price: 169, description: 'Mixed berries, banana, whey protein, and almond milk — creamy and refreshing.', ingredients: 'Mixed berries, banana, vanilla whey protein, unsweetened almond milk, honey.', calories: 220, protein: 18, fibre: 5, tag: 'Smoothies' },
-      { id: 4, name: 'Mediterranean Salad', emoji: '🥗', price: 219, description: 'Crisp romaine, feta cheese, olives, cherry tomatoes, and a zesty oregano vinaigrette.', ingredients: 'Romaine lettuce, feta cheese, kalamata olives, cherry tomatoes, red onion, cucumber, oregano vinaigrette.', calories: 260, protein: 10, fibre: 7, tag: 'Salads' },
-      { id: 5, name: 'Teriyaki Tofu Bowl', emoji: '🍚', price: 229, description: 'Pan-seared tofu with broccoli, edamame, brown rice, and teriyaki glaze.', ingredients: 'Firm tofu, broccoli, edamame, brown rice, teriyaki sauce, sesame seeds, green onion.', calories: 380, protein: 22, fibre: 10, tag: 'Bowls' },
-      { id: 6, name: 'Spicy Paneer Tikka Bowl', emoji: '🌶️', price: 259, description: 'Charred paneer tikka, jeera rice, mint chutney, and crunchy onions.', ingredients: 'Paneer, jeera rice, yogurt, mint chutney, onions, bell peppers, spices.', calories: 420, protein: 24, fibre: 9, tag: 'Bowls' },
-      { id: 8, name: 'BBQ Chicken Loaded Sandwich', emoji: '🥪', price: 219, description: 'Smoky BBQ chicken, cheddar, slaw, and pickles in toasted sourdough.', ingredients: 'Chicken breast, BBQ sauce, cheddar, cabbage slaw, pickles, sourdough bread.', calories: 480, protein: 32, fibre: 7, tag: 'Wraps' },
-      { id: 9, name: 'Falafel Hummus Pita', emoji: '🧆', price: 209, description: 'Crispy falafel, creamy hummus, fresh veg, and tahini in a warm pita.', ingredients: 'Chickpea falafel, hummus, pita, lettuce, tomato, cucumber, tahini sauce.', calories: 430, protein: 16, fibre: 12, tag: 'Wraps' },
-      { id: 10, name: 'Egg Mayo Crunch Wrap', emoji: '🌯', price: 189, description: 'Boiled eggs, creamy mayo, crunchy lettuce, and mustard in a soft tortilla.', ingredients: 'Eggs, mayonnaise, lettuce, mustard, whole wheat tortilla, black pepper.', calories: 360, protein: 18, fibre: 5, tag: 'Wraps' },
-      { id: 11, name: 'Greek Quinoa Salad', emoji: '🥗', price: 239, description: 'Protein-rich quinoa with feta, olives, cucumber, and a lemon herb dressing.', ingredients: 'Quinoa, feta cheese, kalamata olives, cucumber, cherry tomatoes, oregano, lemon dressing.', calories: 310, protein: 14, fibre: 9, tag: 'Salads' },
-      { id: 12, name: 'Chicken Caesar Salad', emoji: '🥬', price: 259, description: 'Grilled chicken over crisp romaine with parmesan and light caesar dressing.', ingredients: 'Grilled chicken breast, romaine lettuce, parmesan, croutons, caesar dressing.', calories: 340, protein: 30, fibre: 4, tag: 'Salads' },
-      { id: 13, name: 'Roasted Beet & Feta Salad', emoji: '🫒', price: 229, description: 'Roasted beets, feta, walnuts, arugula, and a honey balsamic drizzle.', ingredients: 'Beetroot, feta cheese, walnuts, arugula, honey, balsamic vinegar, olive oil.', calories: 290, protein: 11, fibre: 8, tag: 'Salads' },
-      { id: 14, name: 'Mango Oat Smoothie', emoji: '🥭', price: 179, description: 'Sweet mango, rolled oats, yogurt, and honey — a filling breakfast in a cup.', ingredients: 'Mango, rolled oats, yogurt, honey, almond milk.', calories: 240, protein: 12, fibre: 7, tag: 'Smoothies' },
-      { id: 15, name: 'Green Detox Smoothie', emoji: '🥬', price: 189, description: 'Spinach, apple, cucumber, ginger, and lime — a fresh wellness booster.', ingredients: 'Spinach, green apple, cucumber, ginger, lime, chia seeds.', calories: 170, protein: 5, fibre: 6, tag: 'Smoothies' },
-      { id: 24, name: 'Blueberry Almond Overnight Oats', emoji: '🫐', price: 189, description: 'Creamy overnight oats with blueberries, almonds, and a touch of maple.', ingredients: 'Rolled oats, blueberries, almond milk, almonds, maple syrup, chia seeds.', calories: 300, protein: 11, fibre: 8, tag: 'Snacks' },
+      { id: 1, name: 'Grilled Chicken Bowl', emoji: '🥗', price: 249, description: 'Tender grilled chicken, quinoa, avocado, mixed greens, and a light lemon dressing.', ingredients: 'Grilled chicken breast, quinoa, avocado, mixed greens, cherry tomatoes, cucumber, lemon olive oil dressing, sea salt, black pepper.', calories: 350, protein: 28, fibre: 12, carbs: 30, fats: 14, sugar: 4, tag: 'Bowls' },
+      { id: 2, name: 'Rainbow Veggie Wrap', emoji: '🌯', price: 199, description: 'Whole wheat wrap filled with fresh veggies, hummus, and a tangy yogurt sauce.', ingredients: 'Whole wheat tortilla, hummus, bell peppers, carrots, lettuce, cucumber, yogurt sauce, mint, lemon juice.', calories: 280, protein: 12, fibre: 8, carbs: 38, fats: 10, sugar: 6, tag: 'Wraps' },
+      { id: 3, name: 'Berry Protein Smoothie', emoji: '🥤', price: 169, description: 'Mixed berries, banana, whey protein, and almond milk — creamy and refreshing.', ingredients: 'Mixed berries, banana, vanilla whey protein, unsweetened almond milk, honey.', calories: 220, protein: 18, fibre: 5, carbs: 28, fats: 4, sugar: 12, tag: 'Smoothies' },
+      { id: 4, name: 'Mediterranean Salad', emoji: '🥗', price: 219, description: 'Crisp romaine, feta cheese, olives, cherry tomatoes, and a zesty oregano vinaigrette.', ingredients: 'Romaine lettuce, feta cheese, kalamata olives, cherry tomatoes, red onion, cucumber, oregano vinaigrette.', calories: 260, protein: 10, fibre: 7, carbs: 16, fats: 18, sugar: 5, tag: 'Salads' },
+      { id: 5, name: 'Teriyaki Tofu Bowl', emoji: '🍚', price: 229, description: 'Pan-seared tofu with broccoli, edamame, brown rice, and teriyaki glaze.', ingredients: 'Firm tofu, broccoli, edamame, brown rice, teriyaki sauce, sesame seeds, green onion.', calories: 380, protein: 22, fibre: 10, carbs: 48, fats: 12, sugar: 9, tag: 'Bowls' },
+      { id: 6, name: 'Spicy Paneer Tikka Bowl', emoji: '🌶️', price: 259, description: 'Charred paneer tikka, jeera rice, mint chutney, and crunchy onions.', ingredients: 'Paneer, jeera rice, yogurt, mint chutney, onions, bell peppers, spices.', calories: 420, protein: 24, fibre: 9, carbs: 38, fats: 22, sugar: 7, tag: 'Bowls' },
+      { id: 8, name: 'BBQ Chicken Loaded Sandwich', emoji: '🥪', price: 219, description: 'Smoky BBQ chicken, cheddar, slaw, and pickles in toasted sourdough.', ingredients: 'Chicken breast, BBQ sauce, cheddar, cabbage slaw, pickles, sourdough bread.', calories: 480, protein: 32, fibre: 7, carbs: 44, fats: 18, sugar: 11, tag: 'Wraps' },
+      { id: 9, name: 'Falafel Hummus Pita', emoji: '🧆', price: 209, description: 'Crispy falafel, creamy hummus, fresh veg, and tahini in a warm pita.', ingredients: 'Chickpea falafel, hummus, pita, lettuce, tomato, cucumber, tahini sauce.', calories: 430, protein: 16, fibre: 12, carbs: 58, fats: 18, sugar: 6, tag: 'Wraps' },
+      { id: 10, name: 'Egg Mayo Crunch Wrap', emoji: '🌯', price: 189, description: 'Boiled eggs, creamy mayo, crunchy lettuce, and mustard in a soft tortilla.', ingredients: 'Eggs, mayonnaise, lettuce, mustard, whole wheat tortilla, black pepper.', calories: 360, protein: 18, fibre: 5, carbs: 30, fats: 20, sugar: 4, tag: 'Wraps' },
+      { id: 11, name: 'Greek Quinoa Salad', emoji: '🥗', price: 239, description: 'Protein-rich quinoa with feta, olives, cucumber, and a lemon herb dressing.', ingredients: 'Quinoa, feta cheese, kalamata olives, cucumber, cherry tomatoes, oregano, lemon dressing.', calories: 310, protein: 14, fibre: 9, carbs: 34, fats: 15, sugar: 5, tag: 'Salads' },
+      { id: 12, name: 'Chicken Caesar Salad', emoji: '🥬', price: 259, description: 'Grilled chicken over crisp romaine with parmesan and light caesar dressing.', ingredients: 'Grilled chicken breast, romaine lettuce, parmesan, croutons, caesar dressing.', calories: 340, protein: 30, fibre: 4, carbs: 12, fats: 20, sugar: 3, tag: 'Salads' },
+      { id: 13, name: 'Roasted Beet & Feta Salad', emoji: '🫒', price: 229, description: 'Roasted beets, feta, walnuts, arugula, and a honey balsamic drizzle.', ingredients: 'Beetroot, feta cheese, walnuts, arugula, honey, balsamic vinegar, olive oil.', calories: 290, protein: 11, fibre: 8, carbs: 22, fats: 19, sugar: 11, tag: 'Salads' },
+      { id: 14, name: 'Mango Oat Smoothie', emoji: '🥭', price: 179, description: 'Sweet mango, rolled oats, yogurt, and honey — a filling breakfast in a cup.', ingredients: 'Mango, rolled oats, yogurt, honey, almond milk.', calories: 240, protein: 12, fibre: 7, carbs: 42, fats: 5, sugar: 18, tag: 'Smoothies' },
+      { id: 15, name: 'Green Detox Smoothie', emoji: '🥬', price: 189, description: 'Spinach, apple, cucumber, ginger, and lime — a fresh wellness booster.', ingredients: 'Spinach, green apple, cucumber, ginger, lime, chia seeds.', calories: 170, protein: 5, fibre: 6, carbs: 34, fats: 1, sugar: 15, tag: 'Smoothies' },
+      { id: 24, name: 'Blueberry Almond Overnight Oats', emoji: '🫐', price: 189, description: 'Creamy overnight oats with blueberries, almonds, and a touch of maple.', ingredients: 'Rolled oats, blueberries, almond milk, almonds, maple syrup, chia seeds.', calories: 300, protein: 11, fibre: 8, carbs: 42, fats: 10, sugar: 14, tag: 'Snacks' },
     ];
 
     const mealImgs = {
@@ -437,7 +444,7 @@
     }
 
     let cart = [], currentMealId = null, isLoggedIn = false, activeCategory = 'All';
-    let loggedInUser = { name: 'You', email: 'you@example.com', role: 'worker' };
+    let loggedInUser = { name: 'You', email: 'you@example.com', role: 'worker', age: 25 };
     const allOrders = [];
     let accounts = [];
     let streakData = { currentStreak: 0, longestStreak: 0, points: 0, weekLog: [false, false, false, false, false, false, false] };
@@ -554,6 +561,9 @@
             <div class="bg-white rounded-btn p-3 text-center shadow-sm"><span class="text-xl">🔥</span><p class="text-sm font-bold text-soft-black mt-1">${m.calories}</p><p class="text-[10px] text-gray-400">Calories</p></div>
             <div class="bg-white rounded-btn p-3 text-center shadow-sm"><span class="text-xl">💪</span><p class="text-sm font-bold text-soft-black mt-1">${m.protein}g</p><p class="text-[10px] text-gray-400">Protein</p></div>
             <div class="bg-white rounded-btn p-3 text-center shadow-sm"><span class="text-xl">🌾</span><p class="text-sm font-bold text-soft-black mt-1">${m.fibre}g</p><p class="text-[10px] text-gray-400">Fibre</p></div>
+            <div class="bg-white rounded-btn p-3 text-center shadow-sm"><span class="text-xl">🌾</span><p class="text-sm font-bold text-soft-black mt-1">${m.carbs || 0}g</p><p class="text-[10px] text-gray-400">Carbs</p></div>
+            <div class="bg-white rounded-btn p-3 text-center shadow-sm"><span class="text-xl">🥑</span><p class="text-sm font-bold text-soft-black mt-1">${m.fats || 0}g</p><p class="text-[10px] text-gray-400">Healthy Fats</p></div>
+            <div class="bg-white rounded-btn p-3 text-center shadow-sm"><span class="text-xl">🍬</span><p class="text-sm font-bold text-soft-black mt-1">${m.sugar || 0}g</p><p class="text-[10px] text-gray-400">Sugar</p></div>
           </div>
         </div>
         <div class="bg-bg-offwhite rounded-card p-4 mb-4"><h4 class="font-heading font-bold text-soft-black text-sm mb-2">📝 Ingredients</h4><p class="text-sm text-gray-600 font-body leading-relaxed">${m.ingredients}</p></div>
@@ -764,6 +774,102 @@
         <div class="bg-soft-yellow/20 rounded-card p-4 border border-soft-yellow/40"><div class="flex items-start gap-3"><span class="text-xl">💡</span><div><p class="text-sm font-bold text-soft-black">Keep your streak alive!</p><p class="text-xs text-gray-500 leading-relaxed">Order at least one healthy meal every day. Miss a day and your streak resets. You've got this! 💪</p></div></div></div>`;
     }
 
+    const NUTRIENT_META = [
+      { key: 'cal', name: 'Calories', icon: '🔥', unit: 'kcal', color: 'bg-fresh-green' },
+      { key: 'protein', name: 'Protein', icon: '💪', unit: 'g', color: 'bg-soft-blue' },
+      { key: 'fibre', name: 'Fibre', icon: '🌾', unit: 'g', color: 'bg-fresh-mint' },
+      { key: 'carbs', name: 'Carbohydrates', icon: '🍞', unit: 'g', color: 'bg-soft-yellow' },
+      { key: 'fats', name: 'Healthy Fats', icon: '🥑', unit: 'g', color: 'bg-soft-lavender' },
+      { key: 'sugar', name: 'Sugar', icon: '🍬', unit: 'g', color: 'bg-soft-coral' }
+    ];
+    function mealNuts(m) { return { cal: m.calories || 0, protein: m.protein || 0, fibre: m.fibre || 0, carbs: m.carbs || 0, fats: m.fats || 0, sugar: m.sugar || 0 }; }
+    function nutritionGoals(age) {
+      const a = age || 25; let cal, protein, fibre;
+      if (a <= 8) { cal = 1500; protein = 20; fibre = 18; }
+      else if (a <= 13) { cal = 1900; protein = 34; fibre = 24; }
+      else if (a <= 17) { cal = 2400; protein = 50; fibre = 28; }
+      else if (a <= 30) { cal = 2200; protein = 55; fibre = 28; }
+      else if (a <= 50) { cal = 2000; protein = 55; fibre = 30; }
+      else { cal = 1900; protein = 54; fibre = 30; }
+      return { cal, protein, fibre, carbs: Math.round(cal * 0.55 / 4), fats: Math.round(cal * 0.25 / 9), sugar: 30 };
+    }
+    function todayKey(d) { const x = d || new Date(); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
+    function consumedToday() {
+      const t = { cal: 0, protein: 0, fibre: 0, carbs: 0, fats: 0, sugar: 0 }; const tk = todayKey();
+      allOrders.forEach(o => {
+        if (o.userEmail !== loggedInUser.email) return;
+        if (!o.createdAt || todayKey(new Date(o.createdAt)) !== tk) return;
+        if (o.status === 'cancelled' || o.status === 'missed') return;
+        (o.items || []).forEach(i => { const m = meals.find(x => x.id === i.id); if (m) { const n = mealNuts(m); const q = i.qty || 1; NUTRIENT_META.forEach(mm => t[mm.key] += n[mm.key] * q); } });
+      });
+      try {
+        const log = JSON.parse(localStorage.getItem('fe_eaten') || '{}');
+        (log[tk] || []).forEach(e => { const m = meals.find(x => x.id === e.id); if (m) { const n = mealNuts(m); const q = e.qty || 1; NUTRIENT_META.forEach(mm => t[mm.key] += n[mm.key] * q); } });
+      } catch (err) { }
+      return t;
+    }
+    function logEaten(id) {
+      const tk = todayKey(); let log = {};
+      try { log = JSON.parse(localStorage.getItem('fe_eaten') || '{}'); } catch (err) { }
+      if (!log[tk]) log[tk] = [];
+      const e = log[tk].find(x => x.id === id);
+      if (e) e.qty += 1; else log[tk].push({ id, qty: 1 });
+      localStorage.setItem('fe_eaten', JSON.stringify(log));
+      const m = meals.find(x => x.id === id);
+      showToast(`✅ ${m ? m.name : 'Meal'} logged as eaten`); renderNutrition();
+    }
+    function removeEaten(id) {
+      const tk = todayKey(); let log = {};
+      try { log = JSON.parse(localStorage.getItem('fe_eaten') || '{}'); } catch (err) { }
+      const arr = log[tk] || [];
+      const i = arr.findIndex(x => x.id === id);
+      if (i >= 0) { arr[i].qty -= 1; if (arr[i].qty <= 0) arr.splice(i, 1); log[tk] = arr; localStorage.setItem('fe_eaten', JSON.stringify(log)); renderNutrition(); }
+    }
+    function eatenList() {
+      const tk = todayKey(); const map = {};
+      allOrders.forEach(o => {
+        if (o.userEmail !== loggedInUser.email) return;
+        if (!o.createdAt || todayKey(new Date(o.createdAt)) !== tk) return;
+        if (o.status === 'cancelled' || o.status === 'missed') return;
+        (o.items || []).forEach(i => { if (!map[i.id]) map[i.id] = { id: i.id, name: i.name, qty: 0, manual: false }; map[i.id].qty += (i.qty || 1); });
+      });
+      try {
+        const log = JSON.parse(localStorage.getItem('fe_eaten') || '{}');
+        (log[tk] || []).forEach(e => { if (!map[e.id]) map[e.id] = { id: e.id, name: (meals.find(m => m.id === e.id) || {}).name || 'Meal', qty: 0, manual: true }; map[e.id].qty += (e.qty || 1); if (map[e.id].manual === undefined) map[e.id].manual = false; });
+      } catch (err) { }
+      return Object.values(map);
+    }
+    let nutritionShowDetails = false;
+    function renderNutrition() {
+      const c = document.getElementById('nutrition-content');
+      if (!isLoggedIn) { c.innerHTML = `<div class="text-center py-16 fade-in"><span class="text-6xl block mb-4">🥗</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">Not signed in</h3><p class="text-sm text-gray-500 mb-5">Sign in to see your daily nutrition goals</p><button class="px-8 py-3 rounded-btn bg-soft-black text-white font-bold text-sm btn-press" onclick="document.getElementById('login-overlay').classList.remove('hidden')">Sign In</button></div>`; return; }
+      const age = parseInt(loggedInUser.age, 10) || 25;
+      const goals = nutritionGoals(age); const cons = consumedToday();
+      const rows = NUTRIENT_META.map(n => { const goal = goals[n.key]; const used = Math.round(cons[n.key]); const remain = Math.max(0, goal - used); const pct = Math.min(100, Math.round((used / goal) * 100)); return Object.assign({}, n, { goal, used, remain, pct }); });
+      const bars = rows.map(r => `<div class="bg-white rounded-card p-4 mb-3 border border-bg-lightgrey shadow-sm"><div class="flex items-center justify-between mb-2"><span class="flex items-center gap-2 text-sm font-bold text-soft-black"><span>${r.icon}</span> ${r.name}</span><span class="text-xs font-medium text-gray-500">${r.used} / ${r.goal} ${r.unit}</span></div><div class="w-full bg-bg-lightgrey rounded-full h-3"><div class="${r.color} h-3 rounded-full transition-all" style="width:${r.pct}%"></div></div><p class="text-xs text-gray-400 mt-1">${r.remain > 0 ? `${r.remain} ${r.unit} remaining` : '✅ Daily goal met'}</p></div>`).join('');
+      const top = rows.filter(r => ['protein', 'fibre', 'carbs', 'fats'].includes(r.key)).sort((a, b) => (b.remain / b.goal) - (a.remain / a.goal))[0];
+      let tip = '';
+      if (top && top.remain > 0) {
+        const recs = meals.filter(m => mealAvailable(m)).sort((a, b) => (b[top.key] || 0) - (a[top.key] || 0)).slice(0, 3);
+        tip = `<div class="bg-bg-green-tint rounded-card p-4 mb-4 border border-fresh-mint/50 shadow-sm"><div class="flex items-start gap-3"><span class="text-xl">💡</span><div class="flex-1"><p class="text-sm font-bold text-soft-black">You still need ${top.remain}${top.unit} of ${top.name.toLowerCase()} today</p><p class="text-xs text-gray-500 mt-1 mb-3">These available meals can help you reach it:</p><div class="space-y-2">${recs.map(m => `<div class="flex items-center gap-3 bg-white rounded-btn p-2 shadow-sm">${mealThumb(m, 'w-10 h-10 rounded-btn object-cover')}<div class="flex-1 min-w-0"><p class="text-xs font-bold text-soft-black truncate">${m.name}</p><p class="text-[10px] text-gray-400">${top.icon} ${m[top.key] || 0}${top.unit} · ₹${m.price}</p></div><button class="shrink-0 px-3 py-1.5 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="logEaten(${m.id})">+ Log eaten</button></div>`).join('')}</div></div></div></div>`;
+      } else {
+        tip = `<div class="bg-fresh-mint/30 rounded-card p-4 mb-4 border border-fresh-mint shadow-sm"><div class="flex items-center gap-3"><span class="text-2xl">🎉</span><p class="text-sm font-bold text-soft-black">All nutrient goals met today! Great work.</p></div></div>`;
+      }
+      const avMeals = meals.filter(m => mealAvailable(m));
+      const eaten = eatenList();
+      const eatenRows = eaten.length ? eaten.map(e => { const n = mealNuts(meals.find(m => m.id === e.id) || {}); return `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><div class="flex items-center gap-2"><span class="text-xs font-bold text-soft-black">${e.name}</span>${e.manual ? `<span class="text-[9px] bg-soft-yellow/40 px-1.5 py-0.5 rounded-full text-gray-500">logged</span>` : '<span class="text-[9px] bg-fresh-mint/40 px-1.5 py-0.5 rounded-full text-gray-500">ordered</span>'}<span class="text-[10px] text-gray-400">×${e.qty}</span></div><div class="flex items-center gap-1"><span class="text-[10px] text-gray-400">${n.cal}kcal · ${n.protein}g prot</span>${e.manual ? `<button class="ml-2 text-xs text-soft-coral font-bold" onclick="removeEaten(${e.id})">✕</button>` : ''}</div></div>`; }).join('') : '<p class="text-xs text-gray-400 py-2">Nothing eaten or ordered yet today.</p>';
+      const detTable = NUTRIENT_META.map(n => `<div class="flex items-center justify-between py-2 border-b border-bg-lightgrey/60 last:border-0"><span class="flex items-center gap-2 text-xs font-medium text-soft-black"><span>${n.icon}</span>${n.name}</span><span class="text-xs text-gray-500"><span class="font-bold text-soft-black">${cons[n.key].toFixed(0)}</span> / ${goals[n.key]} ${n.unit} · <span class="${rows.find(r => r.key === n.key).remain > 0 ? 'text-soft-coral' : 'text-fresh-green'} font-bold">${rows.find(r => r.key === n.key).remain > 0 ? rows.find(r => r.key === n.key).remain + ' left' : 'met'}</span></span></div>`).join('');
+      const details = nutritionShowDetails ? `<div id="nutrition-details" class="mt-4"><div class="bg-white rounded-card p-4 mb-3 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">📊 Daily Targets</h4><p class="text-[10px] text-gray-400 mb-2">Based on your age (${age} years)</p>${detTable}</div><div class="bg-white rounded-card p-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-1">🍽️ Eaten Today</h4>${eatenRows}</div></div>` : '';
+      c.innerHTML = `
+        <div class="flex items-center justify-between mb-1 fade-in"><div><h2 class="text-xl font-heading font-bold text-soft-black">Today's Nutrition</h2><p class="text-sm text-gray-500">${new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short' })}</p></div><span class="text-xs bg-bg-offwhite border border-bg-lightgrey px-2 py-1 rounded-full text-gray-500">🎂 Age ${age}</span></div>
+        <div class="text-center bg-gradient-to-br from-bg-green-tint to-fresh-mint/30 rounded-card p-4 mb-4 shadow-sm"><span class="text-3xl font-heading font-bold text-fresh-green">${rows.reduce((s, r) => s + (r.pct >= 100 ? 1 : 0), 0)}/6</span><p class="text-xs font-medium text-gray-600 mt-1">nutrient goals met today</p></div>
+        ${tip}
+        ${bars}
+        <div class="bg-white rounded-card p-4 mb-4 border border-bg-lightgrey shadow-sm"><h4 class="font-heading font-bold text-soft-black text-sm mb-2">🍴 Log a Meal as Eaten</h4><p class="text-[10px] text-gray-400 mb-2">Orders today are counted automatically. Tap a meal below to log it manually.</p><div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">${avMeals.map(m => `<button class="shrink-0 px-3 py-2 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-xs font-medium text-soft-black hover:border-fresh-mint transition-all" onclick="logEaten(${m.id})">${m.name}</button>`).join('')}</div></div>
+        <button class="w-full py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press mb-6" onclick="nutritionShowDetails = !nutritionShowDetails; renderNutrition()">${nutritionShowDetails ? 'Hide' : 'View'} Nutrition Details</button>
+        ${details}`;
+    }
+
     function renderProfile() {
       const c = document.getElementById('profile-content');
       if (!isLoggedIn) { c.innerHTML = `<div class="text-center py-16 fade-in"><span class="text-6xl block mb-4">👤</span><h3 class="text-lg font-heading font-bold text-soft-black mb-1">Not signed in</h3><p class="text-sm text-gray-500 mb-5">Sign in to manage your profile</p><button class="px-8 py-3 rounded-btn bg-soft-black text-white font-bold text-sm btn-press" onclick="document.getElementById('login-overlay').classList.remove('hidden')">Sign In</button></div>`; return; }
@@ -774,12 +880,14 @@
             <h4 class="font-heading font-bold text-soft-black text-sm mb-3">✏️ Edit Details</h4>
             <div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Full Name</label><input type="text" id="edit-name" value="${loggedInUser.name}" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div>
             <div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Phone Number</label><input type="tel" id="edit-phone" maxlength="10" inputmode="numeric" value="${loggedInUser.phone || '+91 98765 43210'}" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div>
+            <div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Age</label><input type="number" id="edit-age" min="5" max="100" inputmode="numeric" value="${loggedInUser.age || 25}" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div>
             ${loggedInUser.role !== 'delivery' ? `<div class="mb-4"><label class="text-xs font-bold text-gray-500 mb-1 block">Location</label><input type="text" id="edit-location" value="${loggedInUser.location || 'Tech Park, Floor 4'}" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div>` : ''}
             <div class="flex gap-2"><button class="flex-1 py-3 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="saveProfile()">Save</button><button class="flex-1 py-3 rounded-btn bg-bg-lightgrey text-gray-600 text-xs font-bold btn-press" onclick="renderProfile()">Cancel</button></div>
           </div>
         </div>
         <div class="space-y-2 mb-4">
           <div class="flex items-center justify-between bg-bg-offwhite rounded-btn p-3"><span class="text-sm font-medium text-soft-black">📱 Phone</span><span class="text-sm text-gray-500">${loggedInUser.phone || '+91 98765 43210'}</span></div>
+          <div class="flex items-center justify-between bg-bg-offwhite rounded-btn p-3"><span class="text-sm font-medium text-soft-black">🎂 Age</span><span class="text-sm text-gray-500">${loggedInUser.age || 25} years</span></div>
           ${loggedInUser.role !== 'delivery' ? `<div class="flex items-center justify-between bg-bg-offwhite rounded-btn p-3"><span class="text-sm font-medium text-soft-black">🏢 IT Park</span><span class="text-sm text-gray-500">${loggedInUser.location || 'Tech Park, Floor 4'}</span></div>` : ''}
           ${loggedInUser.role === 'worker' || loggedInUser.role === 'delivery' ? `<div class="flex items-center justify-between bg-bg-offwhite rounded-btn p-3"><span class="text-sm font-medium text-soft-black">⭐ Streak</span><span class="text-sm text-fresh-green font-bold">${streakData.currentStreak} days</span></div>
           <div class="flex items-center justify-between bg-bg-offwhite rounded-btn p-3"><span class="text-sm font-medium text-soft-black">🌱 Points</span><span class="text-sm text-fresh-green font-bold">${streakData.points}</span></div>` : ''}
@@ -796,14 +904,15 @@
       document.getElementById('edit-profile-form')?.classList.remove('hidden');
     }
     function saveProfile() {
-      const n = document.getElementById('edit-name')?.value.trim(); const p = document.getElementById('edit-phone')?.value.trim(); const l = document.getElementById('edit-location')?.value.trim();
+      const n = document.getElementById('edit-name')?.value.trim(); const p = document.getElementById('edit-phone')?.value.trim(); const l = document.getElementById('edit-location')?.value.trim(); const a = parseInt(document.getElementById('edit-age')?.value, 10);
       if (!n) { alert('Please enter your name'); return; }
       if (!p) { alert('Please enter your phone number'); return; }
       if (!/^\d{10}$/.test(p)) { alert('Phone number must be exactly 10 digits'); return; }
+      if (!a || isNaN(a) || a < 5 || a > 100) { alert('Please enter a valid age (5–100)'); return; }
       if (loggedInUser.role !== 'delivery' && !l) { alert('Please enter your location'); return; }
-      loggedInUser.name = n; loggedInUser.phone = p; if (loggedInUser.role !== 'delivery') loggedInUser.location = l;
-      const acc = accounts.find(a => a.email.toLowerCase() === loggedInUser.email.toLowerCase());
-      if (acc) { acc.name = n; acc.phone = p; if (loggedInUser.role !== 'delivery') acc.location = l; }
+      loggedInUser.name = n; loggedInUser.phone = p; loggedInUser.age = a; if (loggedInUser.role !== 'delivery') loggedInUser.location = l;
+      const acc = accounts.find(a2 => a2.email.toLowerCase() === loggedInUser.email.toLowerCase());
+      if (acc) { acc.name = n; acc.phone = p; acc.age = a; if (loggedInUser.role !== 'delivery') acc.location = l; }
       saveState(); renderProfile(); updateCart();
     }
 
@@ -907,7 +1016,7 @@
     // ========== AUTH ==========
     function handleOrderClick(mealId) { if (isLoggedIn && loggedInUser.role === 'worker') { showMealDetail(mealId); } else { document.getElementById('login-overlay').classList.remove('hidden'); currentMealId = mealId; } }
     function loginAs(role) {
-      isLoggedIn = true; loggedInUser = { name: role.charAt(0).toUpperCase() + role.slice(1), email: role + '@fresheats.com', role: role };
+      isLoggedIn = true; loggedInUser = { name: role.charAt(0).toUpperCase() + role.slice(1), email: role + '@fresheats.com', role: role, age: 25 };
       saveState(); document.getElementById('login-overlay').classList.add('hidden');
       document.getElementById('greeting').innerHTML = `Welcome, ${loggedInUser.name}! 👋`;
       if (role === 'worker') showScreen('home');
@@ -923,7 +1032,7 @@
       if (!acc) { alert('No account found with this email. Please create a FreshEats account first.'); return; }
       if (acc.password !== pass) { passEl?.focus(); passEl?.classList.add('border-soft-coral'); alert('Incorrect password. Please try again.'); return; }
       const role = acc.role || 'worker';
-      isLoggedIn = true; loggedInUser = { name: acc.name, email: acc.email, role: role, phone: acc.phone || '+91 98765 43210', location: acc.location || 'Tech Park, Floor 4' };
+      isLoggedIn = true; loggedInUser = { name: acc.name, email: acc.email, role: role, phone: acc.phone || '+91 98765 43210', location: acc.location || 'Tech Park, Floor 4', age: acc.age || 25 };
       saveState(); document.getElementById('greeting').innerHTML = `Welcome, ${loggedInUser.name}! 👋`;
       document.getElementById('screen-auth').classList.remove('active');
       if (role === 'worker') showScreen('home');
@@ -934,6 +1043,7 @@
       const passEl = document.getElementById('auth-password'); const phoneEl = document.getElementById('auth-phone'); const locEl = document.getElementById('auth-location');
       const name = nameEl?.value.trim(); const email = emailEl?.value.trim().toLowerCase();
       const pass = passEl?.value; const phone = phoneEl?.value.trim();
+      const age = parseInt(document.getElementById('auth-age')?.value, 10);
       const role = document.querySelector('input[name="auth-role"]:checked')?.value || 'worker';
       const location = role === 'delivery' ? '' : (locEl?.value.trim() || '');
       if (!name) { nameEl?.focus(); nameEl?.classList.add('border-soft-coral'); alert('Please enter your name'); return; }
@@ -941,11 +1051,12 @@
       if (!pass) { passEl?.focus(); passEl?.classList.add('border-soft-coral'); alert('Please create a password'); return; }
       if (!phone) { phoneEl?.focus(); phoneEl?.classList.add('border-soft-coral'); alert('Please enter your phone number'); return; }
       if (!/^\d{10}$/.test(phone)) { phoneEl?.focus(); phoneEl?.classList.add('border-soft-coral'); alert('Phone number must be exactly 10 digits'); return; }
+      if (!age || isNaN(age) || age < 5 || age > 100) { const ageEl = document.getElementById('auth-age'); ageEl?.focus(); ageEl?.classList.add('border-soft-coral'); alert('Please enter a valid age (5–100)'); return; }
       if (role !== 'delivery' && !location) { locEl?.focus(); locEl?.classList.add('border-soft-coral'); alert('Please enter your location'); return; }
       if (accounts.some(a => a.email.toLowerCase() === email)) { alert('An account with this email already exists. Please log in.'); return; }
-      accounts.push({ name: name, email: email, password: pass, phone: phone, location: location, role: role });
+      accounts.push({ name: name, email: email, password: pass, phone: phone, location: location, role: role, age: age });
       saveState();
-      isLoggedIn = true; loggedInUser = { name: name, email: email, role: role, phone: phone, location: location };
+      isLoggedIn = true; loggedInUser = { name: name, email: email, role: role, phone: phone, location: location, age: age };
       saveState(); document.getElementById('greeting').innerHTML = `Welcome, ${loggedInUser.name}! 👋`;
       document.getElementById('screen-auth').classList.remove('active');
       if (role === 'worker') showScreen('home');
@@ -955,7 +1066,7 @@
       const w = document.getElementById('auth-location-wrap');
       if (w) w.classList.toggle('hidden', document.querySelector('input[name="auth-role"]:checked')?.value === 'delivery');
     }
-    function showSignup() { document.getElementById('auth-content').innerHTML = `<div class="text-center mb-8"><span class="text-7xl block mb-3">🌿</span><h2 class="text-3xl font-heading font-bold text-soft-black">FreshEats</h2><p class="text-sm text-gray-500 mt-1 font-medium">Fresh. Healthy. Quick.</p></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Full Name</label><input type="text" id="auth-name" placeholder="Your name" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Email</label><input type="email" id="auth-email" placeholder="you@company.com" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Password</label><input type="password" id="auth-password" placeholder="Create a password" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Phone Number</label><input type="tel" id="auth-phone" maxlength="10" inputmode="numeric" placeholder="98765 43210" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3" id="auth-location-wrap"><label class="text-xs font-bold text-gray-500 mb-1 block">Location</label><input type="text" id="auth-location" placeholder="Tech Park, Floor 4" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-4"><label class="text-xs font-bold text-gray-500 mb-2 block">I am a</label><div class="grid grid-cols-2 gap-2"><label class="cursor-pointer"><input type="radio" name="auth-role" value="worker" checked class="peer hidden" onchange="toggleAuthLocation()" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">👤</span><span class="text-xs font-bold text-soft-black">Worker</span></div></label><label class="cursor-pointer"><input type="radio" name="auth-role" value="vendor" class="peer hidden" onchange="toggleAuthLocation()" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">🍳</span><span class="text-xs font-bold text-soft-black">Vendor</span></div></label><label class="cursor-pointer"><input type="radio" name="auth-role" value="delivery" class="peer hidden" onchange="toggleAuthLocation()" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">🚚</span><span class="text-xs font-bold text-soft-black">Delivery</span></div></label><label class="cursor-pointer"><input type="radio" name="auth-role" value="admin" class="peer hidden" onchange="toggleAuthLocation()" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">🛡️</span><span class="text-xs font-bold text-soft-black">Admin</span></div></label></div></div><button class='w-full py-4 rounded-2xl bg-fresh-green text-white font-bold text-base border-b-4 border-green-700 hover:brightness-105 active:translate-y-0.5 transition-all shadow-lg' onclick='signupWithEmail()'>CREATE ACCOUNT</button><p class="text-xs text-gray-400 text-center mt-4">Already have an account? <button class="text-fresh-green font-bold hover:underline" onclick="showEmailAuth()">Log in</button></p>`; }
+    function showSignup() { document.getElementById('auth-content').innerHTML = `<div class="text-center mb-8"><span class="text-7xl block mb-3">🌿</span><h2 class="text-3xl font-heading font-bold text-soft-black">FreshEats</h2><p class="text-sm text-gray-500 mt-1 font-medium">Fresh. Healthy. Quick.</p></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Full Name</label><input type="text" id="auth-name" placeholder="Your name" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Email</label><input type="email" id="auth-email" placeholder="you@company.com" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Password</label><input type="password" id="auth-password" placeholder="Create a password" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Phone Number</label><input type="tel" id="auth-phone" maxlength="10" inputmode="numeric" placeholder="98765 43210" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3"><label class="text-xs font-bold text-gray-500 mb-1 block">Age</label><input type="number" id="auth-age" min="5" max="100" inputmode="numeric" placeholder="e.g. 25" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-3" id="auth-location-wrap"><label class="text-xs font-bold text-gray-500 mb-1 block">Location</label><input type="text" id="auth-location" placeholder="Tech Park, Floor 4" class="w-full px-5 py-4 rounded-2xl bg-bg-offwhite border-2 border-bg-lightgrey text-sm font-medium focus:outline-none focus:border-fresh-green transition-all shadow-sm" /></div><div class="mb-4"><label class="text-xs font-bold text-gray-500 mb-2 block">I am a</label><div class="grid grid-cols-2 gap-2"><label class="cursor-pointer"><input type="radio" name="auth-role" value="worker" checked class="peer hidden" onchange="toggleAuthLocation()" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">👤</span><span class="text-xs font-bold text-soft-black">Worker</span></div></label><label class="cursor-pointer"><input type="radio" name="auth-role" value="vendor" class="peer hidden" onchange="toggleAuthLocation()" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">🍳</span><span class="text-xs font-bold text-soft-black">Vendor</span></div></label><label class="cursor-pointer"><input type="radio" name="auth-role" value="delivery" class="peer hidden" onchange="toggleAuthLocation()" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">🚚</span><span class="text-xs font-bold text-soft-black">Delivery</span></div></label><label class="cursor-pointer"><input type="radio" name="auth-role" value="admin" class="peer hidden" onchange="toggleAuthLocation()" /><div class="border-2 border-bg-lightgrey peer-checked:border-fresh-green peer-checked:bg-bg-green-tint rounded-2xl p-3 text-center transition-all shadow-sm"><span class="text-2xl block">🛡️</span><span class="text-xs font-bold text-soft-black">Admin</span></div></label></div></div><button class='w-full py-4 rounded-2xl bg-fresh-green text-white font-bold text-base border-b-4 border-green-700 hover:brightness-105 active:translate-y-0.5 transition-all shadow-lg' onclick='signupWithEmail()'>CREATE ACCOUNT</button><p class="text-xs text-gray-400 text-center mt-4">Already have an account? <button class="text-fresh-green font-bold hover:underline" onclick="showEmailAuth()">Log in</button></p>`; }
     function signOut() { isLoggedIn = false; loggedInUser = { name: 'You', email: 'you@example.com', role: 'worker' }; cart = []; document.getElementById('role-badge').classList.add('hidden'); saveState(); showEmailAuth(); document.getElementById('bottom-nav').classList.add('hidden'); }
 
     function switchRole(role) {
@@ -972,7 +1083,7 @@
       if (name === 'auth' && !isLoggedIn) document.getElementById('bottom-nav').classList.add('hidden'); else document.getElementById('bottom-nav').classList.remove('hidden');
       if (name === 'home' && isLoggedIn && loggedInUser.role !== 'worker') name = loggedInUser.role;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      if (name === 'home') renderHome(); if (name === 'cart') renderCart(); if (name === 'orders') renderOrders(); if (name === 'streaks') renderStreaks(); if (name === 'profile') renderProfile();
+      if (name === 'home') renderHome(); if (name === 'cart') renderCart(); if (name === 'orders') renderOrders(); if (name === 'streaks') renderStreaks(); if (name === 'nutrition') renderNutrition(); if (name === 'profile') renderProfile();
       if (name === 'vendor') renderVendor(); if (name === 'delivery') renderDelivery(); if (name === 'admin') renderAdmin();
       const el = document.getElementById('screen-' + name); if (el) el.classList.add('active');
       document.querySelectorAll('[class*="nav-"]').forEach(b => b.classList.remove('text-fresh-green'));
