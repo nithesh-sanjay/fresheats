@@ -1132,7 +1132,6 @@
         <div class="space-y-2 mb-4">
           ${loggedInUser.role === 'worker' ? `<button class="w-full text-left bg-white rounded-btn p-3 text-sm font-medium text-soft-black hover:bg-bg-offwhite transition-colors border border-bg-lightgrey shadow-sm flex items-center gap-3 btn-press" onclick="showScreen('orders')"><span>📋</span> My Orders</button>` : ''}
           ${loggedInUser.role === 'worker' ? `<button class="w-full text-left bg-white rounded-btn p-3 text-sm font-medium text-soft-black hover:bg-bg-offwhite transition-colors border border-bg-lightgrey shadow-sm flex items-center gap-3 btn-press" onclick="showScreen('suggest')"><span>💡</span> Suggest a Meal</button>` : ''}
-          ${loggedInUser.role === 'worker' ? `<button class="w-full text-left bg-white rounded-btn p-3 text-sm font-medium text-soft-black hover:bg-bg-offwhite transition-colors border border-bg-lightgrey shadow-sm flex items-center gap-3 btn-press" onclick="alert('Payment methods coming soon!')"><span>💳</span> Payment Methods</button>` : ''}
         </div>
         <div class="border-t border-bg-lightgrey pt-4 mb-4"><p class="text-xs text-gray-400 mb-2 font-medium">Logged in as: <span class="font-bold text-soft-black capitalize">${loggedInUser.role}</span></p><p class="text-xs text-gray-400">Sign out to switch to a different role.</p></div>
         <button class="w-full py-3 rounded-btn border border-soft-coral text-soft-coral font-bold text-sm hover:bg-soft-coral hover:text-white transition-all btn-press" onclick="signOut()">Sign Out</button>`;
