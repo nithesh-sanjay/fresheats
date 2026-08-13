@@ -747,7 +747,7 @@
       const c = document.getElementById('orders-content');
       const role = loggedInUser.role;
       const mine = role === 'worker' ? allOrders.filter(o => o.userEmail === loggedInUser.email)
-        : role === 'vendor' ? allOrders.filter(o => o.preparedByEmail === loggedInUser.email)
+        : role === 'vendor' ? allOrders.filter(o => o.preparedByEmail === loggedInUser.email || ['confirmed', 'preparing', 'ready', 'out_for_delivery'].includes(o.status))
         : role === 'delivery' ? allOrders.filter(o => o.deliveredByEmail === loggedInUser.email)
         : allOrders;
       const activeOrders = mine.filter(o => ['confirmed', 'preparing', 'ready', 'out_for_delivery'].includes(o.status));
@@ -769,7 +769,7 @@
       c.innerHTML = '<div class="flex items-center justify-between mb-3">' + deleteBtn + '<span class="text-xs text-gray-400">' + list.length + ' order' + (list.length > 1 ? 's' : '') + '</span></div>' + list.map(o => {
         const sc = { confirmed: 'bg-soft-yellow', preparing: 'bg-soft-blue', ready: 'bg-fresh-mint', 'out_for_delivery': 'bg-soft-lavender', completed: 'bg-fresh-green', cancelled: 'bg-soft-coral', missed: 'bg-soft-coral' }[o.status] || 'bg-bg-lightgrey';
         var delIcon = orderTab === 'history' ? '<button class="text-gray-400 hover:text-soft-coral transition-colors text-lg btn-press" onclick="deleteOrder(' + o.id + ')">✕</button>' : '';
-        var cancelBtn = orderTab === 'active' && o.status === 'confirmed' ? '<button class="text-xs text-soft-coral font-bold px-3 py-1.5 rounded-btn border border-soft-coral btn-press" onclick="cancelOrder(' + o.id + ')">Cancel</button>' : '';
+        var cancelBtn = orderTab === 'active' && o.status === 'confirmed' && role === 'worker' ? '<button class="text-xs text-soft-coral font-bold px-3 py-1.5 rounded-btn border border-soft-coral btn-press" onclick="cancelOrder(' + o.id + ')">Cancel</button>' : '';
         return '<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-3 fade-in"><div class="flex items-center justify-between mb-2"><span class="text-xs font-medium ' + sc + ' px-2 py-0.5 rounded-full capitalize">' + o.status.replace('_', ' ') + '</span><span class="text-xs text-gray-400">#' + String(o.id).slice(-6) + '</span></div><div class="flex items-center gap-3">' + mealThumb(o.items[0], 'w-12 h-12 rounded-btn object-cover') + '<div class="flex-1 cursor-pointer" onclick="showTracking(' + o.id + ')"><p class="font-heading font-bold text-soft-black text-sm">' + o.items[0].name + (o.items.length > 1 ? ' +' + (o.items.length - 1) + ' more' : '') + '</p><p class="text-xs text-gray-500">' + (o.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery') + ' · ' + o.timeSlot + '</p></div><span class="font-heading font-bold text-soft-black">₹' + o.total + '</span>' + delIcon + '</div>' + cancelBtn + '</div>';
       }).join('');
     }
