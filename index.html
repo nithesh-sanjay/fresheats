@@ -533,6 +533,7 @@
     let streakData = { currentStreak: 0, longestStreak: 0, points: 0, weekLog: [false, false, false, false, false, false, false] };
     let vendorMeals = meals.map(m => ({ ...m, available: true, stock: 10 }));
     let mealSuggestions = [];
+    let vendorPickupLoc = 'FreshEats Kitchen, IT Park';
 
     // ========== LOCALSTORAGE PERSISTENCE ==========
     function saveState() {
@@ -544,6 +545,7 @@
         localStorage.setItem('fe_cart', JSON.stringify(cart));
         localStorage.setItem('fe_suggestions', JSON.stringify(mealSuggestions));
         localStorage.setItem('fe_vendor', JSON.stringify(vendorMeals.map(v => ({ id: v.id, available: v.available, stock: v.stock }))));
+        localStorage.setItem('fe_vendor_loc', vendorPickupLoc);
         localStorage.setItem('fe_accounts', JSON.stringify(accounts));
       } catch (e) { }
     }
@@ -565,6 +567,8 @@
         if (sg) { const arr = JSON.parse(sg); arr.forEach(x => mealSuggestions.push(x)); }
         const vd = localStorage.getItem('fe_vendor');
         if (vd) { const arr = JSON.parse(vd); arr.forEach(x => { const v = vendorMeals.find(y => y.id === x.id); if (v) { v.available = x.available; v.stock = x.stock; } }); }
+        const vl = localStorage.getItem('fe_vendor_loc');
+        if (vl) vendorPickupLoc = vl;
         const ac = localStorage.getItem('fe_accounts');
         if (ac) accounts = JSON.parse(ac);
       } catch (e) { }
@@ -1112,6 +1116,14 @@
       c.innerHTML = `
         <div class="grid grid-cols-3 gap-2 mb-4"><div class="bg-gradient-to-br from-bg-green-tint to-fresh-mint/30 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-fresh-green">${vendorMeals.length}</span><p class="text-[10px] text-gray-600">Meals</p></div><div class="bg-gradient-to-br from-soft-yellow/30 to-soft-yellow/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${io.length}</span><p class="text-[10px] text-gray-600">Pending</p></div><div class="bg-gradient-to-br from-soft-blue/30 to-soft-blue/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${allOrders.length}</span><p class="text-[10px] text-gray-600">Total</p></div></div>
         <button class="w-full py-3 rounded-btn bg-fresh-green text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press mb-4" onclick="showScreen('addmeal')">➕ Introduce a Meal</button>
+        <div class="bg-bg-offwhite rounded-card p-3 mb-4">
+          <h4 class="font-heading font-bold text-soft-black text-sm mb-2">🏪 Kitchen / Pickup Location</h4>
+          <div class="flex gap-2">
+            <input id="vendor-pickup-loc" value="${vendorPickupLoc}" placeholder="e.g. Food Court, Block C, IT Park" class="flex-1 w-full px-3 py-2 rounded-btn bg-white border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all" />
+            <button class="px-4 py-2 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm whitespace-nowrap" onclick="saveVendorPickupLoc()">Save</button>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Used as the pickup point on the delivery map</p>
+        </div>
         ${io.length ? `<h4 class="font-heading font-bold text-soft-black text-sm mb-3 mt-4">📋 Incoming Orders</h4>${io.map(o => `<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-2"><div class="flex items-center justify-between mb-2"><span class="text-xs font-medium ${o.status === 'confirmed' ? 'bg-soft-yellow' : 'bg-soft-blue'} px-2 py-0.5 rounded-full capitalize">${o.status}</span></div>${o.items.map(i => `<div class="flex items-center gap-3 mb-1">${mealThumb(i, 'w-9 h-9 rounded-btn object-cover')}<div class="flex-1"><p class="text-sm font-bold text-soft-black">${i.name} ×${i.qty}</p></div></div>`).join('')}<div class="flex items-center justify-between text-xs text-gray-500 mt-2 mb-3"><span>${o.orderType === 'pickup' ? '🚶 Pickup' : '📦 Delivery'}</span><span>⏰ ${o.timeSlot}</span></div><div class="flex gap-2">${o.status === 'confirmed' ? `<button class="flex-1 py-2 rounded-btn bg-soft-blue text-soft-black text-xs font-bold btn-press shadow-sm" onclick="updateOrderStatus(${o.id},'preparing')">Start Preparing</button>` : ''}${o.status === 'preparing' ? `<button class="flex-1 py-2 rounded-btn bg-fresh-mint text-soft-black text-xs font-bold btn-press shadow-sm" onclick="updateOrderStatus(${o.id},'ready')">Mark Ready</button>` : ''}</div></div>`).join('')}` : ''}
         <h4 class="font-heading font-bold text-soft-black text-sm mb-3 mt-4">🍳 Your Meals</h4>
         ${vendorMeals.map(m => `<div class="flex items-center gap-3 bg-bg-offwhite rounded-card p-3 mb-2">${mealThumb(m, 'w-9 h-9 rounded-btn object-cover')}<div class="flex-1 min-w-0"><p class="text-sm font-bold text-soft-black">${m.name}</p><p class="text-xs text-gray-500">₹${m.price}</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" ${m.available ? 'checked' : ''} onchange="toggleMeal(${m.id})" class="sr-only peer" /><div class="w-9 h-5 bg-bg-lightgrey rounded-full peer peer-checked:bg-fresh-green after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full shadow-sm"></div></label></div>`).join('')}
@@ -1126,6 +1138,11 @@
       const o = allOrders.find(x => x.id === oid); if (!o) return;
       if (s === 'ready' && o.orderType === 'pickup') s = 'completed';
       o.status = s; if (s === 'preparing') { o.preparedBy = loggedInUser.name; o.preparedByEmail = loggedInUser.email; } if (s === 'ready') { o.preparedBy = loggedInUser.name; o.preparedByEmail = loggedInUser.email; o.readyAt = new Date(); } saveState(); renderVendor();
+    }
+    function saveVendorPickupLoc() {
+      const v = document.getElementById('vendor-pickup-loc')?.value.trim();
+      if (!v) { showToast('⚠️ Please enter a pickup location'); return; }
+      vendorPickupLoc = v; saveState(); showToast('✅ Pickup location saved'); renderVendor();
     }
     function addSuggestionToMenu(sid) { const s = mealSuggestions.find(x => x.id === sid); if (!s) return; const newId = Math.max(...meals.map(m => m.id), 0) + 1; const newMeal = { id: newId, name: s.name, emoji: '🍽️', price: 199, description: s.desc, ingredients: s.desc, calories: 300, protein: 15, fibre: 8, tag: 'Suggested' }; meals.push(newMeal); vendorMeals.push({ ...newMeal, available: true, stock: 10 }); s.status = 'added'; saveState(); renderVendor(); }
     function ignoreSuggestion(sid) { const s = mealSuggestions.find(x => x.id === sid); if (!s) return; s.status = 'ignored'; saveState(); renderVendor(); }
@@ -1169,9 +1186,20 @@
       c.innerHTML = `
         <div class="grid grid-cols-2 gap-2 mb-4"><div class="bg-gradient-to-br from-soft-blue/30 to-soft-blue/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${av.length}</span><p class="text-[10px] text-gray-600">Available</p></div><div class="bg-gradient-to-br from-soft-yellow/30 to-soft-yellow/10 rounded-card p-3 text-center shadow-sm"><span class="text-xl font-heading font-bold text-soft-black">${md.length}</span><p class="text-[10px] text-gray-600">My Deliveries</p></div></div>
         ${av.length ? `<h4 class="font-heading font-bold text-soft-black text-sm mb-3">📦 Available Deliveries</h4>${av.map(o => `<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-2">${o.items.map(i => `<div class="flex items-center gap-3 mb-1">${mealThumb(i, 'w-9 h-9 rounded-btn object-cover')}<div class="flex-1"><p class="text-sm font-bold text-soft-black">${i.name} ×${i.qty}</p></div></div>`).join('')}<div class="text-xs text-gray-500 mb-1">📍 ${o.items[0]?.location || 'No location specified'}</div><div class="text-xs text-gray-500 mb-3">⏰ ${o.timeSlot}</div><button class="w-full py-2 rounded-btn bg-fresh-mint text-soft-black text-xs font-bold btn-press shadow-sm" onclick="acceptDelivery(${o.id})">Accept Delivery</button></div>`).join('')}` : `<div class="text-center py-8 bg-white rounded-card border border-bg-lightgrey mb-4"><span class="text-4xl block mb-2">🚚</span><p class="text-sm text-gray-500">No deliveries available</p></div>`}
-        ${md.length ? `<h4 class="font-heading font-bold text-soft-black text-sm mb-3 mt-4">📋 My Deliveries</h4>${md.map(o => `<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-2">${o.items.map(i => `<div class="flex items-center gap-3 mb-1">${mealThumb(i, 'w-9 h-9 rounded-btn object-cover')}<div class="flex-1"><p class="text-sm font-bold text-soft-black">${i.name} ×${i.qty}</p></div></div>`).join('')}<div class="text-xs text-gray-500 mb-1">📍 ${o.items[0]?.location || 'No location specified'}</div><div class="text-xs text-gray-500 mb-3">⏰ ${o.timeSlot}</div><button class="w-full py-2 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="completeDelivery(${o.id})">Mark Delivered ✅</button></div>`).join('')}` : ''}`;
+        ${md.length ? `<h4 class="font-heading font-bold text-soft-black text-sm mb-3 mt-4">📋 My Deliveries</h4>${md.map(o => `<div class="bg-white rounded-card card-shadow border border-bg-lightgrey p-4 mb-2">${o.items.map(i => `<div class="flex items-center gap-3 mb-1">${mealThumb(i, 'w-9 h-9 rounded-btn object-cover')}<div class="flex-1"><p class="text-sm font-bold text-soft-black">${i.name} ×${i.qty}</p></div></div>`).join('')}<div class="text-xs text-gray-500 mb-1">📍 ${o.items[0]?.location || 'No location specified'}</div><div class="text-xs text-gray-500 mb-3">⏰ ${o.timeSlot}</div><div class="flex gap-2"><button class="flex-1 py-2 rounded-btn bg-soft-blue text-soft-black text-xs font-bold btn-press shadow-sm" onclick="openOrderRoute(${o.id})">🗺️ View Route</button><button class="flex-1 py-2 rounded-btn bg-fresh-green text-white text-xs font-bold btn-press shadow-sm" onclick="completeDelivery(${o.id})">Mark Delivered ✅</button></div></div>`).join('')}` : ''}`;
     }
-    function acceptDelivery(oid) { const o = allOrders.find(x => x.id === oid); if (o) { o.deliveryAssigned = true; o.deliveredBy = loggedInUser.name; o.deliveredByEmail = loggedInUser.email; o.status = 'out_for_delivery'; saveState(); renderDelivery(); } }
+    function orderDest(o) { return (o.items && o.items[0] && o.items[0].location) || 'IT Park'; }
+    function openRouteMap(from, to) {
+      const url = 'https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=' + encodeURIComponent(from) + '&destination=' + encodeURIComponent(to);
+      window.open(url, '_blank');
+    }
+    function openOrderRoute(oid) { const o = allOrders.find(x => x.id === oid); if (!o) return; openRouteMap(vendorPickupLoc, orderDest(o)); }
+    function acceptDelivery(oid) {
+      const o = allOrders.find(x => x.id === oid); if (!o) return;
+      o.deliveryAssigned = true; o.deliveredBy = loggedInUser.name; o.deliveredByEmail = loggedInUser.email; o.status = 'out_for_delivery';
+      saveState(); renderDelivery();
+      openRouteMap(vendorPickupLoc, orderDest(o));
+    }
     function completeDelivery(oid) { const o = allOrders.find(x => x.id === oid); if (o) { o.status = 'completed'; o.deliveredAt = new Date(); saveState(); renderDelivery(); } }
 
     // ========== ADMIN ==========
