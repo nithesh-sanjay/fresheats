@@ -131,6 +131,68 @@
     .btn-press:active {
       transform: scale(0.97);
     }
+
+    .wheel {
+      position: relative;
+      width: 64px;
+      height: 150px;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      touch-action: pan-y;
+    }
+
+    .wheel::-webkit-scrollbar {
+      display: none;
+    }
+
+    .wheel-item {
+      height: 50px;
+      scroll-snap-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 600;
+      color: #b6c0c7;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+
+    .wheel-item.sel {
+      font-size: 26px;
+      font-weight: 800;
+      color: #1b1b1f;
+    }
+
+    .wheel-hl {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 152px;
+      height: 50px;
+      border-radius: 14px;
+      background: rgba(168, 230, 207, 0.45);
+      pointer-events: none;
+    }
+
+    .ampm {
+      width: 48px;
+      padding: 9px 0;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #9aa5ad;
+      background: #f1f3f4;
+      transition: all 0.15s;
+    }
+
+    .ampm.active {
+      color: #1b1b1f;
+      background: #a8e6cf;
+    }
   </style>
 </head>
 
@@ -595,8 +657,21 @@
           </div>
         </div>
         <div class="mb-4"><h4 class="font-heading font-bold text-soft-black text-sm mb-3">⏰ When do you want it?</h4>
-          <input type="text" id="time-slot" placeholder="e.g. 1:15 PM" autocomplete="off" class="w-full px-4 py-3 rounded-btn bg-bg-offwhite border border-bg-lightgrey text-sm focus:outline-none focus:border-fresh-mint transition-all" />
-          <p class="text-xs text-gray-400 mt-1">Enter your preferred time for pickup or delivery</p>
+          <div class="bg-white rounded-card border border-bg-lightgrey shadow-sm p-3">
+            <input type="hidden" id="time-slot" />
+            <div class="relative flex items-center justify-center gap-2 py-1 overflow-hidden">
+              <div class="wheel-hl"></div>
+              <div class="wheel" id="wheel-hour"></div>
+              <span class="text-3xl font-heading font-bold text-soft-black select-none">:</span>
+              <div class="wheel" id="wheel-min"></div>
+              <div class="flex flex-col gap-1 ml-2">
+                <button type="button" class="ampm" data-a="AM" onclick="setAmPm('AM')">AM</button>
+                <button type="button" class="ampm" data-a="PM" onclick="setAmPm('PM')">PM</button>
+              </div>
+            </div>
+            <p class="text-center text-sm font-heading font-bold text-soft-black mt-1" id="alarm-label">--:-- --</p>
+            <p class="text-xs text-gray-400 text-center mt-1">Scroll the wheels to set your time, like an alarm</p>
+          </div>
         </div>
         <div class="mb-4 hidden" id="location-field">
           <h4 class="font-heading font-bold text-soft-black text-sm mb-2">📍 Delivery Location</h4>
@@ -616,6 +691,60 @@
           <button class="flex-1 py-3 rounded-btn bg-soft-black text-white font-bold text-sm hover:opacity-90 transition-all card-shadow btn-press" onclick="addToCart(${m.id}, true)">Order Now</button>
         </div>` : `<div class="w-full py-3 rounded-btn bg-bg-lightgrey text-gray-400 font-bold text-sm text-center">⛔ Out of Stock</div>`}
       `;
+      initAlarmPicker();
+    }
+    let alarmState = { h: 1, m: 0, a: 'PM' };
+    function initAlarmPicker() {
+      const hw = document.getElementById('wheel-hour'), mw = document.getElementById('wheel-min');
+      if (!hw || !mw) return;
+      const now = new Date();
+      let h = now.getHours(), m = now.getMinutes() + 45;
+      while (m >= 60) { m -= 60; h = (h + 1) % 24; }
+      m = Math.ceil(m / 5) * 5; if (m >= 60) { m = 0; h = (h + 1) % 24; }
+      alarmState = { h: ((h % 12) + 11) % 12 + 1, m, a: h < 12 ? 'AM' : 'PM' };
+      document.querySelectorAll('.ampm').forEach(b => b.classList.toggle('active', b.dataset.a === alarmState.a));
+      buildWheel(hw, Array.from({ length: 12 }, (_, i) => i + 1), alarmState.h, false);
+      buildWheel(mw, Array.from({ length: 60 }, (_, i) => i), alarmState.m, true);
+      hw.addEventListener('scroll', () => onWheelScroll(hw));
+      mw.addEventListener('scroll', () => onWheelScroll(mw));
+      applyAlarm();
+    }
+    function buildWheel(el, values, sel, pad) {
+      const itemH = 50;
+      el.innerHTML = `<div style="height:${itemH}px"></div>` + values.map(v => `<div class="wheel-item${v === sel ? ' sel' : ''}" data-val="${v}">${pad ? String(v).padStart(2, '0') : v}</div>`).join('') + `<div style="height:${itemH}px"></div>`;
+      el.scrollTop = values.indexOf(sel) * itemH;
+      el.querySelectorAll('.wheel-item').forEach(ci => ci.addEventListener('click', () => snapWheel(el, ci)));
+    }
+    function onWheelScroll(el) { clearTimeout(el._t); el._t = setTimeout(() => pickWheel(el), 100); }
+    function pickWheel(el) {
+      const rect = el.getBoundingClientRect(), center = rect.top + rect.height / 2;
+      let best = null, bestDist = Infinity;
+      el.querySelectorAll('.wheel-item').forEach(ci => {
+        const c = ci.getBoundingClientRect().top + ci.getBoundingClientRect().height / 2, d = Math.abs(c - center);
+        if (d < bestDist) { bestDist = d; best = ci; }
+      });
+      if (best) snapWheel(el, best);
+    }
+    function snapWheel(el, item) {
+      const idx = Array.prototype.indexOf.call(el.children, item) - 1;
+      if (idx < 0) return;
+      el.scrollTo({ top: idx * 50, behavior: 'smooth' });
+      el.querySelectorAll('.wheel-item').forEach(x => x.classList.toggle('sel', x === item));
+      applyAlarm();
+    }
+    function applyAlarm() {
+      const hv = document.querySelector('#wheel-hour .wheel-item.sel')?.dataset.val;
+      const mv = document.querySelector('#wheel-min .wheel-item.sel')?.dataset.val;
+      if (hv == null || mv == null) return;
+      alarmState.h = +hv; alarmState.m = +mv;
+      const t = `${hv}:${String(mv).padStart(2, '0')} ${alarmState.a}`;
+      const lb = document.getElementById('alarm-label'); if (lb) lb.textContent = '⏰ ' + t;
+      const ts = document.getElementById('time-slot'); if (ts) ts.value = t;
+    }
+    function setAmPm(a) {
+      alarmState.a = a;
+      document.querySelectorAll('.ampm').forEach(b => b.classList.toggle('active', b.dataset.a === a));
+      applyAlarm();
     }
     /*<div class="flex items-center gap-4 mb-6">
       <div class="flex items-center border border-bg-lightgrey rounded-btn overflow-hidden shadow-sm">
